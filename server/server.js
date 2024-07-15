@@ -1,7 +1,20 @@
 const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
-const typeDefs = require('../server/schemas/typeDefs');
+const mongoose = require('mongoose');
+const typeDefs = require('./schemas/typeDefs');
 const resolvers = require('./schemas/resolvers');
+
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost:27017/inboxgeniusai', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', () => {
+  console.log('Connected to MongoDB');
+});
 
 async function startServer() {
   const server = new ApolloServer({ typeDefs, resolvers });
