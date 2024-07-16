@@ -49,8 +49,8 @@ async function startServer() {
   }));
 
   // Set up API routes
-  app.use('/api/auth', authRoutes);
-  app.use('/api/gmail', gmailRoutes);
+  app.use('/api', authRoutes);
+  app.use('/api', gmailRoutes);
 
   app.get('/session', (req, res) => {
     res.json(req.session);

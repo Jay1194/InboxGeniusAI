@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { oauth2Client, getAuthUrl, getTokens } = require('../googleAuth');
 
-// Route to start OAuth flow - http://localhost:4000/auth/auth
+// Route to start OAuth flow - http://localhost:4000/api/auth
 router.get('/auth', (req, res) => {
   console.log('Redirecting to OAuth2 URL');
   const url = getAuthUrl();
@@ -17,7 +17,7 @@ router.get('/auth/callback', async (req, res) => {
     const tokens = await getTokens(code);
     console.log('Tokens received', tokens);
     req.session.tokens = tokens;
-    res.redirect('/emails');
+    res.redirect('/api/gmails');
   } catch (error) {
     console.error('Error during authentication', error);
     res.status(500).send('Error during authentication');

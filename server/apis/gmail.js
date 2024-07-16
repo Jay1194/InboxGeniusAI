@@ -14,8 +14,8 @@ const getGmailService = (tokens) => {
   return google.gmail({ version: 'v1', auth: oauth2Client });
 };
 
-// Route to list emails - http://localhost:4000/api/gmail/emails
-router.get('/emails', async (req, res) => {
+// Route to list emails - http://localhost:4000/api/gmails
+router.get('/gmails', async (req, res) => {
   const tokens = req.session.tokens; // Retrieve tokens from session
   if (!tokens) return res.status(401).send('Unauthorized');
 
