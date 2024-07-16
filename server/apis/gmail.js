@@ -14,6 +14,22 @@ const getGmailService = (tokens) => {
   return google.gmail({ version: 'v1', auth: oauth2Client });
 };
 
+// Helper function test --------------------
+function decodeMessage(message) {
+  let messageBody = '';
+  if (message.payload.parts) {
+    message.payload.parts.forEach(part => {
+      if (part.mimeType === 'text/plain') {
+        messageBody = Buffer.from(part.body.data, 'base64').toString();
+      }
+    });
+  } else if (message.payload.body.data) {
+    messageBody = Buffer.from(message.payload.body.data, 'base64').toString();
+  }
+  return messageBody;
+}
+
+
 // Route to list emails - http://localhost:4000/api/gmails
 router.get('/gmails', async (req, res) => {
   const tokens = req.session.tokens; // Retrieve tokens from session
@@ -22,8 +38,27 @@ router.get('/gmails', async (req, res) => {
   try {
     const gmail = getGmailService(tokens);
     const response = await gmail.users.messages.list({ userId: 'me' });
-    res.json(response.data);
+    
+    // Fetch full message content for each email
+    const fullMessages = await Promise.all(
+      response.data.messages.map(async (message) => {
+        const fullMessage = await gmail.users.messages.get({
+          userId: 'me',
+          id: message.id,
+          format: 'full'
+        });
+        return {
+          id: fullMessage.data.id,
+          threadId: fullMessage.data.threadId,
+          snippet: fullMessage.data.snippet,
+          body: decodeMessage(fullMessage.data)
+        };
+      })
+    );
+    
+    res.json(fullMessages);
   } catch (error) {
+    console.error('Error fetching emails:', error);
     res.status(500).send('Error fetching emails');
   }
 });
