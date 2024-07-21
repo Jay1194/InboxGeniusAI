@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const emailAnalysisModel = require('../../ai/model/emailAnalysis');
 const { google } = require('googleapis');
 
 
@@ -47,15 +48,20 @@ router.get('/gmails', async (req, res) => {
           id: message.id,
           format: 'full'
         });
+        const body = decodeMessage(fullMessage.data);
+        const analysis = emailAnalysisModel.analyzeEmail(body);
         return {
           id: fullMessage.data.id,
           threadId: fullMessage.data.threadId,
           snippet: fullMessage.data.snippet,
-          body: decodeMessage(fullMessage.data)
+          body: analysis.cleanedBody,  // Use the cleaned body
+          category: analysis.category,
+          summary: analysis.summary,
+          sentiment: analysis.sentiment
         };
       })
     );
-    
+     
     res.json(fullMessages);
   } catch (error) {
     console.error('Error fetching emails:', error);
