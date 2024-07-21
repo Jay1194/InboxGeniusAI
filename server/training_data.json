@@ -1,0 +1,17 @@
+[
+    {"text": "Meeting scheduled for tomorrow at 2 PM", "category": "Work"},
+    {"text": "Project deadline extended to next Friday", "category": "Work"},
+    {"text": "Quarterly report due by end of month", "category": "Work"},
+    {"text": "Team building event next Tuesday", "category": "Work"},
+    {"text": "Please review the attached document", "category": "Work"},
+    {"text": "Dinner plans for Saturday night", "category": "Personal"},
+    {"text": "Family vacation photos shared", "category": "Personal"},
+    {"text": "Birthday party invitation for next weekend", "category": "Personal"},
+    {"text": "Gym membership renewal notice", "category": "Personal"},
+    {"text": "Recipe for homemade pizza", "category": "Personal"},
+    {"text": "Limited time offer: 50% off all items", "category": "Spam"},
+    {"text": "You've won a free iPhone! Claim now", "category": "Spam"},
+    {"text": "Increase your followers instantly", "category": "Spam"},
+    {"text": "Hot singles in your area", "category": "Spam"},
+    {"text": "Miracle weight loss solution", "category": "Spam"}
+  ]
