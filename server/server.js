@@ -1,4 +1,4 @@
-require("dotenv").config()
+require("dotenv").config();
 console.log(require('dotenv').config()); 
 console.log(process.env); 
 
@@ -8,8 +8,13 @@ const { ApolloServer } = require('apollo-server-express');
 const mongoose = require('mongoose');
 const typeDefs = require('./schemas/typeDefs');
 const resolvers = require('./schemas/resolvers');
-const authRoutes = require('./apis/auth');
-const gmailRoutes = require('./apis/gmail');
+const authRoutes = require('./apis/auth');;
+
+
+let gmailRoutes;
+(async () => {
+  gmailRoutes = (await import('./apis/gmail.js')).default;
+})();
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/inboxgeniusai', {
@@ -50,6 +55,11 @@ async function startServer() {
 
   // Set up API routes
   app.use('/api', authRoutes);
+  
+  // Wait for Gmail routes to be ready
+  while (!gmailRoutes) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
   app.use('/api', gmailRoutes);
 
   app.get('/session', (req, res) => {
@@ -71,5 +81,3 @@ async function startServer() {
 }
 
 startServer();
-
-

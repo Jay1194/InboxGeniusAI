@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { google } = require('googleapis');
-const emailAnalysisModel = require('../emailAnalysis');
+const emailAnalysisModel = require('../emailAnalysis.js');
+
 // Gmail API setup
 const getGmailService = (tokens) => {
   const oauth2Client = new google.auth.OAuth2(
@@ -28,15 +29,19 @@ function decodeMessage(message) {
   return messageBody;
 }
 
-// Route to list email
+// Route to list emails
 router.get('/gmails', async (req, res) => {
-  const tokens = req.session.tokens; // Retrieve tokens from session
-  if (!tokens) return res.status(401).send('Unauthorized');
+  const tokens = req.session.tokens;
+  if (!tokens) return res.status(401).send('Unauthorized: No valid session');
 
   try {
     const gmail = getGmailService(tokens);
     const response = await gmail.users.messages.list({ userId: 'me', maxResults: 10 });
-    
+
+    if (!response.data.messages || response.data.messages.length === 0) {
+      return res.status(204).send('No emails found');
+    }
+
     const fullMessages = await Promise.all(
       response.data.messages.map(async (message) => {
         const fullMessage = await gmail.users.messages.get({
@@ -45,20 +50,26 @@ router.get('/gmails', async (req, res) => {
           format: 'full'
         });
         const body = decodeMessage(fullMessage.data);
-        const analysis = emailAnalysisModel.analyzeEmail(body);
+        const analysis = await emailAnalysisModel.analyzeEmail(body);
+        
+        console.log('Analysis result:', analysis);  // Add this line for debugging
+
         return {
           id: fullMessage.data.id,
           threadId: fullMessage.data.threadId,
           snippet: fullMessage.data.snippet,
-          ...analysis
+          category: analysis?.category || 'Uncategorized',
+          isPriority: analysis?.isPriority || false,
+          summary: analysis?.summary || 'No summary available',
+          cleanedBody: analysis?.cleanedBody || body
         };
       })
     );
-    
+
     res.json(fullMessages);
   } catch (error) {
-    console.error('Error fetching emails:', error);
-    res.status(500).send('Error fetching emails');
+    console.error('Error fetching or analyzing emails:', error);
+    res.status(500).send('Error processing emails: ' + error.message);
   }
 });
 
