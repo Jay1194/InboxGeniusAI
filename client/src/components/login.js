@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, gql } from '@apollo/client';
-import '../login.css'; 
-import loginArt from './login-art.png'; // Import your image
+import '../login.css';
+import loginArt from './login-art.png'; // Ensure this path is correct
 
 const LOGIN_MUTATION = gql`
   mutation Login($email: String!, $password: String!) {
@@ -70,10 +70,9 @@ function Login() {
           />
           <button type="submit">Log In</button>
         </form>
+        <p className="ai">powered by AI⚡️</p>
       </div>
-      <div className="login-right">
-        <img src={loginArt} alt="Login Art" className="login-art" />
-      </div>
+      <div className="login-right" style={{backgroundImage: `url(${loginArt})`}}></div>
     </div>
   );
 }
