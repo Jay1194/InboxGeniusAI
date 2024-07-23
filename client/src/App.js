@@ -4,11 +4,15 @@ import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink } from '@ap
 import { setContext } from '@apollo/client/link/context';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Login from './components/login';
+import Dashboard from '../src/components/Dashboard';
+import HandleAuth from '../src/components/Handle';
 
+// Create an http link
 const httpLink = createHttpLink({
   uri: 'http://localhost:4000/graphql', 
 });
 
+// Create an auth link
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('token');
   return {
@@ -19,6 +23,7 @@ const authLink = setContext((_, { headers }) => {
   }
 });
 
+// Create the Apollo Client
 const client = new ApolloClient({
   link: authLink.concat(httpLink),
   cache: new InMemoryCache()
@@ -31,6 +36,8 @@ function App() {
         <div className="App">
           <Routes>
             <Route path="/" element={<Login />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/handle-auth" element={<HandleAuth />} />
           </Routes>
         </div>
       </Router>
@@ -39,4 +46,3 @@ function App() {
 }
 
 export default App;
-

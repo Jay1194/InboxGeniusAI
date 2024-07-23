@@ -1,0 +1,23 @@
+/* dashboard.css */
+.dashboard {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .dashboard h1 {
+    color: #333;
+  }
+  
+  .dashboard button {
+    background-color: #f44336;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .dashboard button:hover {
+    background-color: #d32f2f;
+  }

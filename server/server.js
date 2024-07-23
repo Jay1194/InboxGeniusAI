@@ -1,22 +1,16 @@
-require("dotenv").config();
-console.log(require('dotenv').config()); 
-console.log(process.env); 
-
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const { ApolloServer } = require('apollo-server-express');
 const mongoose = require('mongoose');
+const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const typeDefs = require('./schemas/typeDefs');
 const resolvers = require('./schemas/resolvers');
-const authRoutes = require('./apis/auth');;
+const authRoutes = require('./apis/auth');
+const gmailRoutes = require('./apis/gmail');
+const User = require('./models/User');
 
-
-let gmailRoutes;
-(async () => {
-  gmailRoutes = (await import('./apis/gmail.js')).default;
-})();
-
-// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/inboxgeniusai', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -32,51 +26,57 @@ async function startServer() {
   const server = new ApolloServer({
     typeDefs,
     resolvers,
-    context: ({ req }) => ({
-      oauth2Client: req.oauth2Client,
-    }),
+    context: async ({ req }) => {
+      const token = req.headers.authorization || '';
+      if (token && token.startsWith('Bearer ')) {
+        try {
+          const decoded = jwt.verify(token.slice(7), process.env.JWT_SECRET);
+          const user = await User.findById(decoded.id);
+          return { user };
+        } catch (e) {
+          console.log('Error verifying token:', e);
+        }
+      }
+      return { user: null };
+    },
   });
 
   await server.start();
 
   const app = express();
 
-  // Middleware
+  app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true
+  }));
+
   app.use(express.json());
   app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: {
-      secure: process.env.NODE_ENV === 'production', 
+      secure: process.env.NODE_ENV === 'production',
       maxAge: 24 * 60 * 60 * 1000,
     }
   }));
 
-  // Set up API routes
   app.use('/api', authRoutes);
-  
-  // Wait for Gmail routes to be ready
-  while (!gmailRoutes) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
-  app.use('/api', gmailRoutes);
+app.use('/api', gmailRoutes);
 
-  app.get('/session', (req, res) => {
-    res.json(req.session);
-  });
-
-  // Apply Apollo GraphQL middleware
-  server.applyMiddleware({ app });
+  server.applyMiddleware({ app, path: '/graphql' });
 
   app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something broke!');
+    console.error('Server error:', err.stack);
+    res.status(500).json({
+      message: 'Something broke!',
+      error: process.env.NODE_ENV === 'production' ? {} : err
+    });
   });
 
-  // Start the server
-  app.listen({ port: 4000 }, () => {
-    console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`);
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}${server.graphqlPath}`);
   });
 }
 

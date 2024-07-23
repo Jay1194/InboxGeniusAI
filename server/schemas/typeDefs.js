@@ -24,6 +24,7 @@ const typeDefs = gql`
     getEmails: [Email]
     getEmail(id: ID!): Email
     getUser(id: ID!): User
+    me: User
   }
 
   type Mutation {

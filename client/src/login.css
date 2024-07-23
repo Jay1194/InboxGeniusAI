@@ -26,7 +26,7 @@ body, html {
   
   .login-right {
     flex: 0.6;
-    background-color: #6D61A1;
+    /*background-color: #6D61A1;*/
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useMutation, gql } from '@apollo/client';
+import { useNavigate } from 'react-router-dom';
 import '../login.css';
-import loginArt from './login-art.png'; // Ensure this path is correct
+import loginArt from '../components/login-art.png'
 
 const LOGIN_MUTATION = gql`
   mutation Login($email: String!, $password: String!) {
@@ -19,12 +20,13 @@ const LOGIN_MUTATION = gql`
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
   const [login, { loading, error }] = useMutation(LOGIN_MUTATION, {
     onCompleted: (data) => {
       localStorage.setItem('token', data.login.token);
       localStorage.setItem('user', JSON.stringify(data.login.user));
-      // Redirect to dashboard or home page after successful login
-      // You might want to use React Router's useNavigate hook for this
+      navigate('/dashboard');
     }
   });
 
@@ -34,9 +36,7 @@ function Login() {
   };
 
   const handleGoogleSignIn = () => {
-    // Implement Google Sign-In logic here
     console.log('Google Sign-In clicked');
-    // You would typically redirect to your backend's Google OAuth endpoint here
     window.location.href = 'http://localhost:4000/api/auth';
   };
 
