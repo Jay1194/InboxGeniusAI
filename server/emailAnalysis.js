@@ -11,11 +11,13 @@ class EmailAnalysisModel {
     this.classifier = null;
     this.summarizer = null;
     this.isInitialized = false;
-    this.initializationPromise = this.initialize();
+    this.cache = new Map();
   }
 
-  async initialize() {
-    console.log('Initializing AI models in the background...');
+  async lazyInitialize() {
+    if (this.isInitialized) return;
+
+    console.log('Initializing AI models...');
     try {
       const { pipeline } = await import('@xenova/transformers');
       const model = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
@@ -125,6 +127,7 @@ class EmailAnalysisModel {
     if (!this.isInitialized) {
       return this.quickCategorize(text);
     }
+    await this.lazyInitialize();
     return await this.classifier(text);
   }
 
@@ -132,6 +135,7 @@ class EmailAnalysisModel {
     if (!this.isInitialized) {
       return text.slice(0, 100) + '...';  // Simple summary if not initialized
     }
+    await this.lazyInitialize();
     const result = await this.summarizer(text, {
       max_length: 100,
       min_length: 30,
@@ -146,19 +150,24 @@ class EmailAnalysisModel {
   }
 
   async analyzeEmail(body) {
+    // Check cache first
+    if (this.cache.has(body)) {
+      return this.cache.get(body);
+    }
+
     const cleanedBody = await this.cleanEmailContent(body);
     const category = await this.categorizeEmail(cleanedBody);
     const isPriority = this.isPriority(cleanedBody);
     const summary = await this.summarizeEmail(cleanedBody);
 
+    const result = { category, isPriority, summary, cleanedBody };
+
+    // Cache the result
+    this.cache.set(body, result);
+
     console.log('Analysis details:', { category, isPriority, summary: summary.slice(0, 50) + '...' });
 
-    return {
-      category,
-      isPriority,
-      summary,
-      cleanedBody
-    };
+    return result;
   }
 }
 

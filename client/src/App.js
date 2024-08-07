@@ -4,8 +4,9 @@ import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink } from '@ap
 import { setContext } from '@apollo/client/link/context';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Login from './components/login';
-import Dashboard from '../src/components/Dashboard';
-import HandleAuth from '../src/components/Handle';
+import Dashboard from './components/Dashboard';
+import HandleAuth from './components/Handle';
+import CategoryPage from './components/CategoryPage'; // Import the new CategoryPage component
 
 // Create an http link
 const httpLink = createHttpLink({
@@ -38,6 +39,7 @@ function App() {
             <Route path="/" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/handle-auth" element={<HandleAuth />} />
+            <Route path="/category/:category" element={<CategoryPage />} /> {/* Add this new route */}
           </Routes>
         </div>
       </Router>
