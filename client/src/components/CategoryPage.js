@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import EmailModal from './EmailModal';
 import './categoryPage.css';
 
 function CategoryPage() {
@@ -9,7 +8,6 @@ function CategoryPage() {
   const [emails, setEmails] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedEmail, setSelectedEmail] = useState(null);
 
   useEffect(() => {
     const fetchEmails = async () => {
@@ -17,7 +15,6 @@ function CategoryPage() {
         const response = await axios.get(`http://localhost:4000/api/gmails?category=${category}`, {
           withCredentials: true
         });
-        console.log('Fetched emails:', response.data);
         setEmails(response.data);
         setLoading(false);
       } catch (error) {
@@ -31,11 +28,8 @@ function CategoryPage() {
   }, [category]);
 
   const handleEmailClick = (email) => {
-    setSelectedEmail(email);
-  };
-
-  const closeModal = () => {
-    setSelectedEmail(null);
+    const gmailUrl = `https://mail.google.com/mail/u/0/#inbox/${email.id}`;
+    window.open(gmailUrl, '_blank');
   };
 
   if (loading) return <div className="loading">Loading...</div>;
@@ -53,8 +47,7 @@ function CategoryPage() {
           {emails.length > 0 ? (
             emails.map(email => (
               <div key={email.id} className={`email-item ${email.isPriority ? 'priority' : ''}`} onClick={() => handleEmailClick(email)}>
-                <h3>{email.snippet}</h3>
-                <p>{email.summary}</p>
+                <h3>{email.snippet || 'No subject'}</h3>
                 <span className="email-category">{email.category}</span>
               </div>
             ))
@@ -63,10 +56,6 @@ function CategoryPage() {
           )}
         </section>
       </main>
-
-      {selectedEmail && (
-        <EmailModal email={selectedEmail} onClose={closeModal} />
-      )}
     </div>
   );
 }
