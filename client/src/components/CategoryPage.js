@@ -17,7 +17,7 @@ function CategoryPage() {
         const response = await axios.get(`http://localhost:4000/api/gmails?category=${category}`, {
           withCredentials: true
         });
-        console.log('Fetched emails:', response.data); // Debugging
+        console.log('Fetched emails:', response.data);
         setEmails(response.data);
         setLoading(false);
       } catch (error) {

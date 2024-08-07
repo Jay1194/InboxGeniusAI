@@ -5,6 +5,7 @@ import axios from 'axios';
 import EmailModal from './EmailModal';
 import '../dashboard.css';
 
+
 const GET_USER_DATA = gql`
   query Me {
     me {
@@ -76,7 +77,9 @@ function Dashboard() {
   return (
     <div className="dashboard">
       <header className="dashboard-header">
-        <h1>InboxGeniusAI</h1>
+      <div className="logo-container">
+      <div className="logo"></div>
+      </div>
         <div className="user-info">
           <span>{userData.me.name}</span>
           <button onClick={handleLogout} className="logout-btn">Logout</button>
@@ -94,7 +97,7 @@ function Dashboard() {
         </nav>
 
         <section className="email-list">
-          <h2>Priority Emails</h2>
+          <h2>Priority Emails<span>❗️</span></h2>
           {priorityEmails.length > 0 ? (
             priorityEmails.slice(0, 3).map(email => (
               <div key={email.id} className="email-item priority" onClick={() => handleEmailClick(email)}>

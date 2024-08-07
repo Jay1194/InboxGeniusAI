@@ -36,7 +36,8 @@ router.get('/gmails', async (req, res) => {
 
   try {
     const gmail = getGmailService(tokens);
-    const response = await gmail.users.messages.list({ userId: 'me', maxResults: 10 });
+    const category = req.query.category;
+    const response = await gmail.users.messages.list({ userId: 'me', maxResults: 50 }); // Increased maxResults
 
     if (!response.data.messages || response.data.messages.length === 0) {
       return res.status(204).send('No emails found');
@@ -52,21 +53,23 @@ router.get('/gmails', async (req, res) => {
         const body = decodeMessage(fullMessage.data);
         const analysis = await emailAnalysisModel.analyzeEmail(body);
         
-        console.log('Analysis result:', analysis);  // Add this line for debugging
-
         return {
           id: fullMessage.data.id,
           threadId: fullMessage.data.threadId,
           snippet: fullMessage.data.snippet,
-          category: analysis?.category || 'Uncategorized',
-          isPriority: analysis?.isPriority || false,
-          summary: analysis?.summary || 'No summary available',
-          cleanedBody: analysis?.cleanedBody || body
+          ...analysis
         };
       })
     );
 
-    res.json(fullMessages);
+    let filteredMessages = fullMessages;
+    if (category) {
+      filteredMessages = fullMessages.filter(message => 
+        message.category.toLowerCase() === category.toLowerCase()
+      );
+    }
+
+    res.json(filteredMessages);
   } catch (error) {
     console.error('Error fetching or analyzing emails:', error);
     res.status(500).send('Error processing emails: ' + error.message);
