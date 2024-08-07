@@ -1,11 +1,4 @@
-/* dashboard.css */
-:root {
-  --emerald-green: #50C878;
-  --black: #000000;
-  --background: #f5f5f5;
-  --text-color: #333333;
-  --border-color: #e0e0e0;
-}
+
 .email-item.priority {
   border-left: 4px solid var(--emerald-green);
   background-color: rgba(80, 200, 120, 0.1); /* Light green background */
@@ -15,6 +8,15 @@
 .email-list h2 {
   margin-top: 30px;
   margin-bottom: 15px;
+}
+
+/* dashboard.css */
+:root {
+  --emerald-green: #50C878;
+  --black: #000000;
+  --background: #f5f5f5;
+  --text-color: #333333;
+  --border-color: #e0e0e0;
 }
 
 body {
@@ -116,6 +118,12 @@ body {
 .email-item {
   border-bottom: 1px solid var(--border-color);
   padding: 15px 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.email-item:hover {
+  background-color: #f0f0f0;
 }
 
 .email-item:last-child {
@@ -155,4 +163,72 @@ body {
 
 .error {
   color: #ff0000;
+}
+
+/* Add these styles to your existing dashboard.css */
+
+.email-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.email-modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 80%;
+  max-height: 80%;
+  overflow-y: auto;
+}
+
+.email-modal-content h2 {
+  margin-top: 0;
+}
+
+.email-modal-content button {
+  margin-top: 20px;
+}
+
+.email-item {
+  cursor: pointer;
+}
+
+.email-item:hover {
+  background-color: #f0f0f0;
+}
+.category-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.back-link {
+  color: var(--emerald-green);
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.category-main {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }

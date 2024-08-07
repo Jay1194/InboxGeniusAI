@@ -7,19 +7,18 @@
     --border-color: #e0e0e0;
   }
   
-  .category-page {
-    max-width: 1200px;
+  /* CategoryPage.css */
+.category-page {
+    max-width: 800px;
     margin: 0 auto;
     padding: 20px;
-    background-color: var(--background);
   }
   
   .category-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 0;
-    border-bottom: 2px solid var(--emerald-green);
+    margin-bottom: 20px;
   }
   
   .category-header h1 {
@@ -30,7 +29,6 @@
   .back-link {
     color: var(--emerald-green);
     text-decoration: none;
-    font-weight: bold;
   }
   
   .back-link:hover {
@@ -38,32 +36,37 @@
   }
   
   .category-main {
-    margin-top: 20px;
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   
   .email-list {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
   }
   
   .email-item {
-    border-bottom: 1px solid var(--border-color);
-    padding: 15px 0;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
   }
   
-  .email-item:last-child {
-    border-bottom: none;
+  .email-item:hover {
+    background-color: #f0f0f0;
   }
   
   .email-item h3 {
-    margin: 0 0 10px 0;
+    margin: 0 0 5px 0;
     color: var(--black);
   }
   
   .email-item p {
-    margin: 0 0 10px 0;
+    margin: 0 0 5px 0;
     color: var(--text-color);
   }
   
@@ -71,24 +74,11 @@
     display: inline-block;
     background-color: var(--emerald-green);
     color: white;
-    padding: 5px 10px;
-    border-radius: 15px;
+    padding: 3px 8px;
+    border-radius: 12px;
     font-size: 0.8em;
   }
   
   .email-item.priority {
     border-left: 4px solid var(--emerald-green);
-    padding-left: 16px;
-    background-color: rgba(80, 200, 120, 0.1);
-  }
-  
-  .loading, .error {
-    text-align: center;
-    padding: 20px;
-    font-size: 1.2em;
-    color: var(--text-color);
-  }
-  
-  .error {
-    color: #ff0000;
   }

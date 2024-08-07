@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import EmailModal from './EmailModal';
 import './categoryPage.css';
 
 function CategoryPage() {
@@ -8,6 +9,7 @@ function CategoryPage() {
   const [emails, setEmails] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedEmail, setSelectedEmail] = useState(null);
 
   useEffect(() => {
     const fetchEmails = async () => {
@@ -15,6 +17,7 @@ function CategoryPage() {
         const response = await axios.get(`http://localhost:4000/api/gmails?category=${category}`, {
           withCredentials: true
         });
+        console.log('Fetched emails:', response.data); // Debugging
         setEmails(response.data);
         setLoading(false);
       } catch (error) {
@@ -26,6 +29,14 @@ function CategoryPage() {
 
     fetchEmails();
   }, [category]);
+
+  const handleEmailClick = (email) => {
+    setSelectedEmail(email);
+  };
+
+  const closeModal = () => {
+    setSelectedEmail(null);
+  };
 
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error">Error fetching emails: {error}</div>;
@@ -39,15 +50,23 @@ function CategoryPage() {
       
       <main className="category-main">
         <section className="email-list">
-          {emails.map(email => (
-            <div key={email.id} className={`email-item ${email.isPriority ? 'priority' : ''}`}>
-              <h3>{email.snippet}</h3>
-              <p>{email.summary}</p>
-              <span className="email-category">{email.category}</span>
-            </div>
-          ))}
+          {emails.length > 0 ? (
+            emails.map(email => (
+              <div key={email.id} className={`email-item ${email.isPriority ? 'priority' : ''}`} onClick={() => handleEmailClick(email)}>
+                <h3>{email.snippet}</h3>
+                <p>{email.summary}</p>
+                <span className="email-category">{email.category}</span>
+              </div>
+            ))
+          ) : (
+            <p>No emails found in this category.</p>
+          )}
         </section>
       </main>
+
+      {selectedEmail && (
+        <EmailModal email={selectedEmail} onClose={closeModal} />
+      )}
     </div>
   );
 }

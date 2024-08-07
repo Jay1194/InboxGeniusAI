@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, gql } from '@apollo/client';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import EmailModal from './EmailModal';
 import '../dashboard.css';
 
 const GET_USER_DATA = gql`
@@ -25,6 +26,7 @@ function Dashboard() {
   const [emails, setEmails] = useState([]);
   const [emailsLoading, setEmailsLoading] = useState(true);
   const [emailsError, setEmailsError] = useState(null);
+  const [selectedEmail, setSelectedEmail] = useState(null);
 
   useEffect(() => {
     const fetchEmails = async () => {
@@ -53,6 +55,14 @@ function Dashboard() {
     } catch (error) {
       console.error('Error logging out:', error);
     }
+  };
+
+  const handleEmailClick = (email) => {
+    setSelectedEmail(email);
+  };
+
+  const closeModal = () => {
+    setSelectedEmail(null);
   };
 
   if (userLoading || emailsLoading) return <div className="loading">Loading...</div>;
@@ -87,7 +97,7 @@ function Dashboard() {
           <h2>Priority Emails</h2>
           {priorityEmails.length > 0 ? (
             priorityEmails.slice(0, 3).map(email => (
-              <div key={email.id} className="email-item priority">
+              <div key={email.id} className="email-item priority" onClick={() => handleEmailClick(email)}>
                 <h3>{email.snippet}</h3>
                 <p>{email.summary}</p>
                 <span className="email-category">{email.category}</span>
@@ -99,7 +109,7 @@ function Dashboard() {
 
           <h2>Recent Emails</h2>
           {regularEmails.slice(0, 5).map(email => (
-            <div key={email.id} className="email-item">
+            <div key={email.id} className="email-item" onClick={() => handleEmailClick(email)}>
               <h3>{email.snippet}</h3>
               <p>{email.summary}</p>
               <span className="email-category">{email.category}</span>
@@ -107,6 +117,10 @@ function Dashboard() {
           ))}
         </section>
       </main>
+
+      {selectedEmail && (
+        <EmailModal email={selectedEmail} onClose={closeModal} />
+      )}
     </div>
   );
 }
