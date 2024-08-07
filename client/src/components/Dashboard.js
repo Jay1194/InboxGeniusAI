@@ -49,7 +49,7 @@ function Dashboard() {
 
   const handleLogout = async () => {
     try {
-      await axios.post('/api/logout', {}, { withCredentials: true });
+      await axios.post('http://localhost:4000/api/logout', {}, { withCredentials: true });
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       navigate('/');

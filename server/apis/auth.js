@@ -25,6 +25,16 @@ router.get('/auth', (req, res, next) => {
   }
 });
 
+router.post('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ message: 'Could not log out, please try again' });
+    }
+    res.clearCookie('connect.sid'); // clear the session cookie
+    return res.status(200).json({ message: 'Logged out successfully' });
+  });
+});
+
 router.get('/auth/callback', async (req, res) => {
   console.log('OAuth2 Callback received', req.query);
   const { code } = req.query;
