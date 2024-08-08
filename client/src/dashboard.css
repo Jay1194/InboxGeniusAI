@@ -261,3 +261,43 @@ body {
   margin-right: 15px;
 }
 
+.priority-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.5rem 2rem 0.5rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #10B981; /* Emerald green color */
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); /* Emerald green with opacity */
+}
+
+.search-icon {
+  position: absolute;
+  right: 0.75rem;
+  color: #666;
+}
+
+/* Optional: Change the text selection color to match the theme */
+.search-input::selection {
+  background-color: rgba(16, 185, 129, 0.2); /* Emerald green with opacity */
+}

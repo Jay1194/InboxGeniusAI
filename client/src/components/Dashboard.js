@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, gql } from '@apollo/client';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { Search } from 'lucide-react';
 import '../dashboard.css';
 
 const GET_USER_DATA = gql`
@@ -25,6 +26,7 @@ function Dashboard() {
   const [emails, setEmails] = useState([]);
   const [emailsLoading, setEmailsLoading] = useState(true);
   const [emailsError, setEmailsError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchEmails = async () => {
@@ -60,13 +62,21 @@ function Dashboard() {
     window.open(gmailUrl, '_blank');
   };
 
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
   if (userLoading || emailsLoading) return <div className="loading">Loading...</div>;
   if (userError) return <div className="error">Error: Unable to fetch user data</div>;
   if (emailsError) return <div className="error">Error fetching emails: {emailsError}</div>;
   if (!userData || !userData.me) return <div className="error">No user data available</div>;
 
-  const priorityEmails = emails.filter(email => email.isPriority);
-  const regularEmails = emails.filter(email => !email.isPriority);
+  const filteredEmails = emails.filter(email =>
+    email.summary.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const priorityEmails = filteredEmails.filter(email => email.isPriority);
+  const regularEmails = filteredEmails.filter(email => !email.isPriority);
 
   return (
     <div className="dashboard">
@@ -91,6 +101,17 @@ function Dashboard() {
         </nav>
 
         <section className="email-list">
+          <div className="search-container">
+            <input
+              type="text"
+              placeholder="Search all emails..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="search-input"
+            />
+            <Search className="search-icon" size={20} />
+          </div>
+
           <h2>Priority Emails<span> ⚠️ </span></h2>
           {priorityEmails.length > 0 ? (
             priorityEmails.slice(0, 3).map(email => (
@@ -100,7 +121,7 @@ function Dashboard() {
               </div>
             ))
           ) : (
-            <p>No priority emails</p>
+            <p>No priority emails match your search</p>
           )}
 
           <h2>Recent Emails</h2>
