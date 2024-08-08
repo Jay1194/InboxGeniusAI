@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, gql } from '@apollo/client';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Search } from 'lucide-react';
+import { Search, Mic, MicOff } from 'lucide-react';
 import '../dashboard.css';
 
 const GET_USER_DATA = gql`
@@ -27,6 +27,7 @@ function Dashboard() {
   const [emailsLoading, setEmailsLoading] = useState(true);
   const [emailsError, setEmailsError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isListening, setIsListening] = useState(false);
 
   useEffect(() => {
     const fetchEmails = async () => {
@@ -64,6 +65,40 @@ function Dashboard() {
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
+  };
+
+  const toggleVoiceSearch = () => {
+    if (!isListening) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.start();
+        setIsListening(true);
+
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          setSearchTerm(transcript);
+          setIsListening(false);
+        };
+
+        recognition.onerror = (event) => {
+          console.error('Speech recognition error', event.error);
+          setIsListening(false);
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+      } else {
+        alert('Speech recognition is not supported in your browser.');
+      }
+    } else {
+      setIsListening(false);
+    }
   };
 
   if (userLoading || emailsLoading) return <div className="loading">Loading...</div>;
@@ -110,6 +145,9 @@ function Dashboard() {
               className="search-input"
             />
             <Search className="search-icon" size={20} />
+            <button onClick={toggleVoiceSearch} className="voice-search-btn">
+              {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+            </button>
           </div>
 
           <h2>Priority Emails<span> ⚠️ </span></h2>

@@ -287,17 +287,30 @@ body {
 
 .search-input:focus {
   outline: none;
-  border-color: #10B981; /* Emerald green color */
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); /* Emerald green with opacity */
+  border-color: #10B981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
 .search-icon {
   position: absolute;
-  right: 0.75rem;
+  right: 2.5rem;
   color: #666;
 }
 
-/* Optional: Change the text selection color to match the theme */
-.search-input::selection {
-  background-color: rgba(16, 185, 129, 0.2); /* Emerald green with opacity */
+.voice-search-btn {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.3s ease;
+}
+
+.voice-search-btn:hover {
+  color: #10B981;
+}
+
+.voice-search-btn:focus {
+  outline: none;
 }
