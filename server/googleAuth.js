@@ -25,9 +25,14 @@ const getAuthUrl = () => {
 };
 
 const getTokens = async (code) => {
-  const { tokens } = await oauth2Client.getToken(code);
-  oauth2Client.setCredentials(tokens);
-  return tokens;
+  try {
+    const { tokens } = await oauth2Client.getToken(code);
+    oauth2Client.setCredentials(tokens);
+    return tokens;
+  } catch (error) {
+    console.error('Error retrieving tokens:', error);
+    throw error;
+  }
 };
 
 module.exports = { oauth2Client, getAuthUrl, getTokens };

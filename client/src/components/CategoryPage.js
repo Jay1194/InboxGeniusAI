@@ -47,8 +47,9 @@ function CategoryPage() {
           {emails.length > 0 ? (
             emails.map(email => (
               <div key={email.id} className={`email-item ${email.isPriority ? 'priority' : ''}`} onClick={() => handleEmailClick(email)}>
-                <h3>{email.snippet || 'No subject'}</h3>
+                <h3>{email.summary || 'No summary available'}</h3>
                 <span className="email-category">{email.category}</span>
+                {email.isPriority && <span className="priority-tag">Priority</span>}
               </div>
             ))
           ) : (

@@ -95,7 +95,7 @@ function Dashboard() {
           {priorityEmails.length > 0 ? (
             priorityEmails.slice(0, 3).map(email => (
               <div key={email.id} className="email-item priority" onClick={() => handleEmailClick(email)}>
-                <h3>{email.snippet || 'No subject'}</h3>
+                <h3>{email.summary || 'No summary available'}</h3>
                 <span className="email-category">{email.category}</span>
               </div>
             ))
@@ -106,7 +106,7 @@ function Dashboard() {
           <h2>Recent Emails</h2>
           {regularEmails.slice(0, 5).map(email => (
             <div key={email.id} className="email-item" onClick={() => handleEmailClick(email)}>
-              <h3>{email.snippet || 'No subject'}</h3>
+              <h3>{email.summary || 'No summary available'}</h3>
               <span className="email-category">{email.category}</span>
             </div>
           ))}

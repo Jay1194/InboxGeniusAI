@@ -29,6 +29,12 @@ function decodeMessage(message) {
   return messageBody;
 }
 
+// Helper function to get email subject
+function getEmailSubject(headers) {
+  const subjectHeader = headers.find(header => header.name.toLowerCase() === 'subject');
+  return subjectHeader ? subjectHeader.value : '';
+}
+
 // Route to list emails
 router.get('/gmails', async (req, res) => {
   const tokens = req.session.tokens;
@@ -37,7 +43,7 @@ router.get('/gmails', async (req, res) => {
   try {
     const gmail = getGmailService(tokens);
     const category = req.query.category;
-    const response = await gmail.users.messages.list({ userId: 'me', maxResults: 50 }); // Increased maxResults
+    const response = await gmail.users.messages.list({ userId: 'me', maxResults: 50 });
 
     if (!response.data.messages || response.data.messages.length === 0) {
       return res.status(204).send('No emails found');
@@ -51,12 +57,14 @@ router.get('/gmails', async (req, res) => {
           format: 'full'
         });
         const body = decodeMessage(fullMessage.data);
-        const analysis = await emailAnalysisModel.analyzeEmail(body);
+        const subject = getEmailSubject(fullMessage.data.payload.headers);
+        const analysis = await emailAnalysisModel.analyzeEmail(body, subject);
         
         return {
           id: fullMessage.data.id,
           threadId: fullMessage.data.threadId,
           snippet: fullMessage.data.snippet,
+          subject: subject,
           ...analysis
         };
       })
