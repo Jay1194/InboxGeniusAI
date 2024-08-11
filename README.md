@@ -10,10 +10,8 @@ InboxGeniusAI is an AI-powered email management tool designed to streamline your
 - **Priority Tagging:** Highlights important and urgent emails.
 - **Email Summarization:** Provides concise summaries of lengthy messages.
 - **Follow-Up Reminders:** Automates reminders for follow-up actions.
-- **Sentiment Analysis:** Analyzes the tone of emails.
 - **Voice Search:** Enables hands-free email search.
 - **Personalized Dashboard:** Displays a daily digest and engagement analytics.
-- **Adaptive Learning:** Customizes organization based on user behavior.
 
 ## Tech Stack
 
