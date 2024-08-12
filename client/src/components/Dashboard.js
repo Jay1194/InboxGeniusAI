@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Search, Mic, MicOff, Archive, Inbox } from 'lucide-react';
+import { Search, Mic, MicOff, Archive, Inbox, ChevronDown, ChevronUp } from 'lucide-react';
 import '../dashboard.css';
 
 const categories = [
@@ -16,15 +16,15 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isListening, setIsListening] = useState(false);
-  const [showArchived, setShowArchived] = useState(false);
+  const [view, setView] = useState('inbox'); // 'inbox', 'archived', 'allPriority', 'allRecent'
 
   useEffect(() => {
     fetchEmails();
-  }, [showArchived]);
+  }, [view]);
 
   const fetchEmails = async () => {
     try {
-      const response = await axios.get(`http://localhost:4000/api/gmails?archived=${showArchived}`, {
+      const response = await axios.get(`http://localhost:4000/api/gmails?archived=${view === 'archived'}`, {
         withCredentials: true
       });
       setEmails(response.data);
@@ -153,15 +153,65 @@ function Dashboard() {
             </button>
           </div>
 
-          <div className="archive-toggle">
-            <button onClick={() => setShowArchived(!showArchived)}>
-              {showArchived ? <Inbox size={20} /> : <Archive size={20} />}
-              {showArchived ? 'Show Inbox' : 'Show Archived'}
+          <div className="view-toggles">
+            <button onClick={() => setView('inbox')} className={view === 'inbox' ? 'active' : ''}>
+              Inbox
+            </button>
+            <button onClick={() => setView('archived')} className={view === 'archived' ? 'active' : ''}>
+              Archived
+            </button>
+            <button onClick={() => setView('allPriority')} className={view === 'allPriority' ? 'active' : ''}>
+              All Priority
+            </button>
+            <button onClick={() => setView('allRecent')} className={view === 'allRecent' ? 'active' : ''}>
+              All Recent
             </button>
           </div>
 
-          {showArchived ? (
-            <>
+          {(view === 'inbox' || view === 'allPriority') && (
+            <div className="email-section">
+              <h2>Priority Emails</h2>
+              {priorityEmails.slice(0, view === 'allPriority' ? undefined : 3).map(email => (
+                <EmailItem 
+                  key={email.id} 
+                  email={email} 
+                  onAction={handleArchive} 
+                  onClick={handleEmailClick}
+                  actionIcon={<Archive size={20} />}
+                  actionText="Archive"
+                />
+              ))}
+              {view === 'inbox' && priorityEmails.length > 3 && (
+                <button onClick={() => setView('allPriority')} className="show-more-btn">
+                  Show All Priority Emails <ChevronDown size={20} />
+                </button>
+              )}
+            </div>
+          )}
+
+          {(view === 'inbox' || view === 'allRecent') && (
+            <div className="email-section">
+              <h2>Recent Emails</h2>
+              {regularEmails.slice(0, view === 'allRecent' ? undefined : 5).map(email => (
+                <EmailItem 
+                  key={email.id} 
+                  email={email} 
+                  onAction={handleArchive} 
+                  onClick={handleEmailClick}
+                  actionIcon={<Archive size={20} />}
+                  actionText="Archive"
+                />
+              ))}
+              {view === 'inbox' && regularEmails.length > 5 && (
+                <button onClick={() => setView('allRecent')} className="show-more-btn">
+                  Show All Recent Emails <ChevronDown size={20} />
+                </button>
+              )}
+            </div>
+          )}
+
+          {view === 'archived' && (
+            <div className="email-section">
               <h2>Archived Emails</h2>
               {filteredEmails.map(email => (
                 <EmailItem 
@@ -173,33 +223,13 @@ function Dashboard() {
                   actionText="Unarchive"
                 />
               ))}
-            </>
-          ) : (
-            <>
-              <h2>Priority Emails</h2>
-              {priorityEmails.map(email => (
-                <EmailItem 
-                  key={email.id} 
-                  email={email} 
-                  onAction={handleArchive} 
-                  onClick={handleEmailClick}
-                  actionIcon={<Archive size={20} />}
-                  actionText="Archive"
-                />
-              ))}
+            </div>
+          )}
 
-              <h2>Recent Emails</h2>
-              {regularEmails.map(email => (
-                <EmailItem 
-                  key={email.id} 
-                  email={email} 
-                  onAction={handleArchive} 
-                  onClick={handleEmailClick}
-                  actionIcon={<Archive size={20} />}
-                  actionText="Archive"
-                />
-              ))}
-            </>
+          {(view === 'allPriority' || view === 'allRecent') && (
+            <button onClick={() => setView('inbox')} className="show-less-btn">
+              Back to Inbox <ChevronUp size={20} />
+            </button>
           )}
         </section>
       </main>
