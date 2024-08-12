@@ -11,7 +11,6 @@ const authRoutes = require('./apis/auth');
 const gmailRoutes = require('./apis/gmail');
 const User = require('./models/User');
 
-// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/inboxgeniusai', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -23,35 +22,28 @@ db.once('open', () => {
   console.log('Connected to MongoDB');
 });
 
-// Start the Express server
 async function startServer() {
   const app = express();
 
-  // CORS setup for the entire app
   app.use(cors({
-    origin: 'http://localhost:3000', // Allow frontend requests
+    origin: 'http://localhost:3000',
     credentials: true
   }));
 
-  // Express JSON parser
   app.use(express.json());
-
-  // Session management
   app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: {
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      maxAge: 24 * 60 * 60 * 1000,
     }
   }));
 
-  // REST API routes
   app.use('/api', authRoutes);
   app.use('/api', gmailRoutes);
 
-  // GraphQL server setup
   const server = new ApolloServer({
     typeDefs,
     resolvers,
@@ -72,14 +64,12 @@ async function startServer() {
 
   await server.start();
 
-  // Apply GraphQL middleware to the Express app
   server.applyMiddleware({ 
     app, 
     path: '/graphql',
-    cors: false // Handle CORS at the Express level
+    cors: false // Disable Apollo Server's CORS as we're handling it with express cors middleware
   });
 
-  // General error handling
   app.use((err, req, res, next) => {
     console.error('Server error:', err.stack);
     res.status(500).json({
@@ -88,12 +78,10 @@ async function startServer() {
     });
   });
 
-  // Start the server
   const PORT = process.env.PORT || 4000;
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}${server.graphqlPath}`);
   });
 }
 
-// Run the server
 startServer();
