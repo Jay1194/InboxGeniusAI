@@ -309,3 +309,15 @@ body {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 10px;
 }
+.email-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 5px;
+  font-size: 0.8em;
+  color: #666;
+}
+
+.email-date {
+  margin-left: 10px;
+}

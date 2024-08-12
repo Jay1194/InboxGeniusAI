@@ -73,10 +73,12 @@ router.get('/gmails', async (req, res) => {
           snippet: fullMessage.data.snippet,
           subject: subject,
           archived: !fullMessage.data.labelIds.includes('INBOX'),
+          receivedAt: fullMessage.data.internalDate, // Add this line
           ...analysis
         };
       })
     );
+    
 
     let filteredMessages = fullMessages;
     if (category) {

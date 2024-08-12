@@ -264,12 +264,35 @@ function Dashboard() {
 }
 
 function EmailItem({ email, onAction, onClick, actionIcon, actionText }) {
+  function formatDate(internalDate) {
+    if (!internalDate) return 'Date unknown';
+    
+    const date = new Date(parseInt(internalDate, 10));
+    if (isNaN(date.getTime())) return 'Date unknown';
+  
+    const options = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true
+    };
+  
+    return date.toLocaleString('en-US', options);
+  }
+  
+  
+
   return (
     <div className={`email-item ${email.isPriority ? 'priority' : ''}`}>
       <div onClick={() => onClick(email)}>
         <h3>{email.subject || 'No subject'}</h3>
         <p>{email.summary || 'No summary available'}</p>
-        <span className="email-category">{email.category}</span>
+        <div className="email-details">
+          <span className="email-category">{email.category}</span>
+          <span className="email-date">{formatDate(email.receivedAt)}</span>
+        </div>
       </div>
       <button onClick={() => onAction(email.id)} className="action-btn" title={actionText}>
         {actionIcon}
