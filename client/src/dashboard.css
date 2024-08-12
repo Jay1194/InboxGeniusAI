@@ -250,15 +250,15 @@ body {
 .view-toggles {
   display: flex;
   justify-content: center;
-  margin-bottom: 1rem;
   background-color: #f0f0f0;
   border-radius: 20px;
   padding: 5px;
+  margin: 0 auto;
 }
 
 .view-toggles button {
   padding: 8px 16px;
-  margin: 0 5px;
+  margin: 0 10px;
   background-color: transparent;
   border: none;
   border-radius: 15px;
