@@ -48,27 +48,12 @@ function Login() {
       <div className="login-container">
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="my-logo"></div>
-          <h2>Login To Your Email</h2>
+          <h2>Login To Your Gmail</h2>
+          <div className="or-divider"></div>
           <button type="button" className="google-button" onClick={handleGoogleSignIn}>
             <div className="google-icon"></div>
             Sign in with Google
           </button>
-          <div className="or-divider">or</div>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <button type="submit">Log In</button>
         </form>
         <p className="ai">powered by AI⚡️</p>
       </div>

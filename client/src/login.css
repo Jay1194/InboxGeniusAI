@@ -120,13 +120,7 @@ body, html {
     border-bottom: 1px solid #ddd;
   }
   
-  .or-divider::before {
-    margin-right: .25em;
-  }
   
-  .or-divider::after {
-    margin-left: .25em;
-  }
  .ai{
     font-size: 15px;
  }

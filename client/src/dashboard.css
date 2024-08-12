@@ -161,7 +161,7 @@ body {
 
 .email-category {
   display: inline-block;
-  background-color: (0, 0, 0, 0.1);
+  background-color: rgba(0, 0, 0, 0.1);
   color: inherit;
   padding: 5px 10px;
   border-radius: 15px;
@@ -309,6 +309,7 @@ body {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 10px;
 }
+
 .email-details {
   display: flex;
   align-items: center;
@@ -326,7 +327,3 @@ body {
   font-size: 0.6rem;
   margin: 0 10px;
 }
-
-
-
-

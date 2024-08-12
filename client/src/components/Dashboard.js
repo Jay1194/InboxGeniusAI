@@ -97,16 +97,12 @@ function Dashboard() {
 
   const handleArchive = async (emailId) => {
     try {
-      // Optimistic update
       setEmails(prevEmails => prevEmails.map(email => 
         email.id === emailId ? { ...email, archived: true } : email
       ));
       await axios.post(`http://localhost:4000/api/archive/${emailId}`, {}, { withCredentials: true });
-      // If the API call is successful, we don't need to do anything else
-      // If it fails, we should revert the optimistic update
     } catch (error) {
       console.error('Error archiving email:', error);
-      // Revert the optimistic update
       setEmails(prevEmails => prevEmails.map(email => 
         email.id === emailId ? { ...email, archived: false } : email
       ));
@@ -115,16 +111,12 @@ function Dashboard() {
 
   const handleUnarchive = async (emailId) => {
     try {
-      // Optimistic update
       setEmails(prevEmails => prevEmails.map(email => 
         email.id === emailId ? { ...email, archived: false } : email
       ));
       await axios.post(`http://localhost:4000/api/unarchive/${emailId}`, {}, { withCredentials: true });
-      // If the API call is successful, we don't need to do anything else
-      // If it fails, we should revert the optimistic update
     } catch (error) {
       console.error('Error unarchiving email:', error);
-      // Revert the optimistic update
       setEmails(prevEmails => prevEmails.map(email => 
         email.id === emailId ? { ...email, archived: true } : email
       ));
@@ -165,110 +157,129 @@ function Dashboard() {
         </nav>
 
         <section className="email-list">
-  <div className="search-container">
-    <input
-      type="text"
-      placeholder="Search all emails..."
-      value={searchTerm}
-      onChange={handleSearchChange}
-      className="search-input"
-    />
-    <Search className="search-icon" size={20} />
-    <button onClick={toggleVoiceSearch} className="voice-search-btn">
-      {isListening ? <MicOff size={20} /> : <Mic size={20} />}
-    </button>
-  </div>
-
-  {/* Show search results if there's a search term */}
-  {searchTerm && (
-    <div className="email-section search-results">
-      <h2>Search Results</h2>
-      {filteredEmails.length === 0 ? (
-        <p>No emails found.</p>
-      ) : (
-        filteredEmails.map(email => (
-          <EmailItem 
-            key={email.id} 
-            email={email} 
-            onAction={handleArchive} 
-            onClick={handleEmailClick}
-            actionIcon={<Archive size={20} />}
-            actionText="Archive"
-          />
-        ))
-      )}
-    </div>
-  )}
-
-  {/* Show categorized sections only if there's no search term */}
-  {!searchTerm && (
-    <>
-      {(view === 'inbox' || view === 'allPriority') && (
-        <div className="email-section">
-          <h2>Priority Emails</h2>
-          {priorityEmails.slice(0, view === 'allPriority' ? undefined : 3).map(email => (
-            <EmailItem 
-              key={email.id} 
-              email={email} 
-              onAction={handleArchive} 
-              onClick={handleEmailClick}
-              actionIcon={<Archive size={20} />}
-              actionText="Archive"
+          <div className="search-container">
+            <input
+              type="text"
+              placeholder="Search all emails..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="search-input"
             />
-          ))}
-          {view === 'inbox' && priorityEmails.length > 3 && (
-            <button onClick={() => setView('allPriority')} className="show-more-btn">
-              Show All Priority Emails <ChevronDown size={20} />
+            <Search className="search-icon" size={20} />
+            <button onClick={toggleVoiceSearch} className="voice-search-btn">
+              {isListening ? <MicOff size={20} /> : <Mic size={20} />}
             </button>
-          )}
-        </div>
-      )}
+          </div>
 
-      {(view === 'inbox' || view === 'allRecent') && (
-        <div className="email-section" ref={recentEmailsRef}>
-          <h2>Recent Emails</h2>
-          {regularEmails.slice(0, view === 'allRecent' ? undefined : 5).map(email => (
-            <EmailItem 
-              key={email.id} 
-              email={email} 
-              onAction={handleArchive} 
-              onClick={handleEmailClick}
-              actionIcon={<Archive size={20} />}
-              actionText="Archive"
-            />
-          ))}
-          {view === 'inbox' && regularEmails.length > 5 && (
-            <button onClick={() => setView('allRecent')} className="show-more-btn">
-              Show All Recent Emails <ChevronDown size={20} />
+          <div className="view-toggles">
+            <button 
+              onClick={() => setView('inbox')} 
+              className={view === 'inbox' ? 'active' : ''}
+            >
+              Inbox
             </button>
+            <button 
+              onClick={() => setView('allPriority')} 
+              className={view === 'allPriority' ? 'active' : ''}
+            >
+              Priority
+            </button>
+            <button 
+              onClick={() => setView('archived')} 
+              className={view === 'archived' ? 'active' : ''}
+            >
+              Archived
+            </button>
+          </div>
+
+          {searchTerm && (
+            <div className="email-section search-results">
+              <h2>Search Results</h2>
+              {filteredEmails.length === 0 ? (
+                <p>No emails found.</p>
+              ) : (
+                filteredEmails.map(email => (
+                  <EmailItem 
+                    key={email.id} 
+                    email={email} 
+                    onAction={handleArchive} 
+                    onClick={handleEmailClick}
+                    actionIcon={<Archive size={20} />}
+                    actionText="Archive"
+                  />
+                ))
+              )}
+            </div>
           )}
-        </div>
-      )}
 
-      {view === 'archived' && (
-        <div className="email-section">
-          <h2>Archived Emails</h2>
-          {archivedEmails.map(email => (
-            <EmailItem 
-              key={email.id} 
-              email={email} 
-              onAction={handleUnarchive} 
-              onClick={handleEmailClick}
-              actionIcon={<Inbox size={20} />}
-              actionText="Unarchive"
-            />
-          ))}
-        </div>
-      )}
+          {!searchTerm && (
+            <>
+              {(view === 'inbox' || view === 'allPriority') && (
+                <div className="email-section">
+                  <h2>Priority Emails</h2>
+                  {priorityEmails.slice(0, view === 'allPriority' ? undefined : 3).map(email => (
+                    <EmailItem 
+                      key={email.id} 
+                      email={email} 
+                      onAction={handleArchive} 
+                      onClick={handleEmailClick}
+                      actionIcon={<Archive size={20} />}
+                      actionText="Archive"
+                    />
+                  ))}
+                  {view === 'inbox' && priorityEmails.length > 3 && (
+                    <button onClick={() => setView('allPriority')} className="show-more-btn">
+                      Show All Priority Emails <ChevronDown size={20} />
+                    </button>
+                  )}
+                </div>
+              )}
 
-      {(view === 'allPriority' || view === 'allRecent') && (
-        <button onClick={() => setView('inbox')} className="show-less-btn">
-          <ChevronUp size={20} /> Back to Inbox
-        </button>
-      )}
-    </>
-  )}
-</section>
+              {(view === 'inbox' || view === 'allRecent') && (
+                <div className="email-section" ref={recentEmailsRef}>
+                  <h2>Recent Emails</h2>
+                  {regularEmails.slice(0, view === 'allRecent' ? undefined : 5).map(email => (
+                    <EmailItem 
+                      key={email.id} 
+                      email={email} 
+                      onAction={handleArchive} 
+                      onClick={handleEmailClick}
+                      actionIcon={<Archive size={20} />}
+                      actionText="Archive"
+                    />
+                  ))}
+                  {view === 'inbox' && regularEmails.length > 5 && (
+                    <button onClick={() => setView('allRecent')} className="show-more-btn">
+                      Show All Recent Emails <ChevronDown size={20} />
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {view === 'archived' && (
+                <div className="email-section">
+                  <h2>Archived Emails</h2>
+                  {archivedEmails.map(email => (
+                    <EmailItem 
+                      key={email.id} 
+                      email={email} 
+                      onAction={handleUnarchive} 
+                      onClick={handleEmailClick}
+                      actionIcon={<Inbox size={20} />}
+                      actionText="Unarchive"
+                    />
+                  ))}
+                </div>
+              )}
+
+              {(view === 'allPriority' || view === 'allRecent') && (
+                <button onClick={() => setView('inbox')} className="show-less-btn">
+                  <ChevronUp size={20} /> Back to Inbox
+                </button>
+              )}
+            </>
+          )}
+        </section>
       </main>
     </div>
   );
@@ -308,6 +319,5 @@ function EmailItem({ email, onAction, onClick, actionIcon, actionText }) {
     </div>
   );
 }
-
 
 export default Dashboard;

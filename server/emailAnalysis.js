@@ -52,7 +52,7 @@ class EmailAnalysisModel {
     return this.classifier.classify(preprocessedText);
   }
 
-  summarizeEmail(text, subject, maxLength = 200) {
+  summarizeEmail(text, subject, maxLength = 100) {
     if (!text || text.trim().length === 0) {
       return subject ? `Subject: ${subject}` : "No summary available";
     }
