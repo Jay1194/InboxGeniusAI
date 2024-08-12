@@ -72,6 +72,7 @@ router.get('/gmails', async (req, res) => {
           threadId: fullMessage.data.threadId,
           snippet: fullMessage.data.snippet,
           subject: subject,
+          archived: !fullMessage.data.labelIds.includes('INBOX'),
           ...analysis
         };
       })

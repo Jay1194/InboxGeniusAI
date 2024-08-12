@@ -35,10 +35,18 @@ function CategoryPage() {
 
   const handleArchive = async (emailId) => {
     try {
+      // Optimistic update
+      setEmails(prevEmails => prevEmails.filter(email => email.id !== emailId));
+      
+      // Perform the actual archive operation
       await axios.post(`http://localhost:4000/api/archive/${emailId}`, {}, { withCredentials: true });
-      fetchEmails(); // Refresh the email list after archiving
+      
+      // If the API call is successful, we don't need to do anything else
+      // If it fails, we should revert the optimistic update (handled in the catch block)
     } catch (error) {
       console.error('Error archiving email:', error);
+      // Revert the optimistic update
+      fetchEmails();
     }
   };
 

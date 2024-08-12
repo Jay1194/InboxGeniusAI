@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Search, Mic, MicOff, Archive, Inbox, ChevronDown, ChevronUp } from 'lucide-react';
@@ -16,10 +16,17 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isListening, setIsListening] = useState(false);
-  const [view, setView] = useState('inbox'); // 'inbox', 'archived', 'allPriority', 'allRecent'
+  const [view, setView] = useState('inbox');
+  const recentEmailsRef = useRef(null);
 
   useEffect(() => {
     fetchEmails();
+  }, [view]);
+
+  useEffect(() => {
+    if (view === 'allRecent' && recentEmailsRef.current) {
+      recentEmailsRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [view]);
 
   const fetchEmails = async () => {
@@ -90,19 +97,37 @@ function Dashboard() {
 
   const handleArchive = async (emailId) => {
     try {
+      // Optimistic update
+      setEmails(prevEmails => prevEmails.map(email => 
+        email.id === emailId ? { ...email, archived: true } : email
+      ));
       await axios.post(`http://localhost:4000/api/archive/${emailId}`, {}, { withCredentials: true });
-      fetchEmails();
+      // If the API call is successful, we don't need to do anything else
+      // If it fails, we should revert the optimistic update
     } catch (error) {
       console.error('Error archiving email:', error);
+      // Revert the optimistic update
+      setEmails(prevEmails => prevEmails.map(email => 
+        email.id === emailId ? { ...email, archived: false } : email
+      ));
     }
   };
 
   const handleUnarchive = async (emailId) => {
     try {
+      // Optimistic update
+      setEmails(prevEmails => prevEmails.map(email => 
+        email.id === emailId ? { ...email, archived: false } : email
+      ));
       await axios.post(`http://localhost:4000/api/unarchive/${emailId}`, {}, { withCredentials: true });
-      fetchEmails();
+      // If the API call is successful, we don't need to do anything else
+      // If it fails, we should revert the optimistic update
     } catch (error) {
       console.error('Error unarchiving email:', error);
+      // Revert the optimistic update
+      setEmails(prevEmails => prevEmails.map(email => 
+        email.id === emailId ? { ...email, archived: true } : email
+      ));
     }
   };
 
@@ -114,8 +139,9 @@ function Dashboard() {
     email.summary.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const priorityEmails = filteredEmails.filter(email => email.isPriority);
-  const regularEmails = filteredEmails.filter(email => !email.isPriority);
+  const priorityEmails = filteredEmails.filter(email => email.isPriority && !email.archived);
+  const regularEmails = filteredEmails.filter(email => !email.isPriority && !email.archived);
+  const archivedEmails = filteredEmails.filter(email => email.archived);
 
   return (
     <div className="dashboard">
@@ -190,7 +216,7 @@ function Dashboard() {
           )}
 
           {(view === 'inbox' || view === 'allRecent') && (
-            <div className="email-section">
+            <div className="email-section" ref={recentEmailsRef}>
               <h2>Recent Emails</h2>
               {regularEmails.slice(0, view === 'allRecent' ? undefined : 5).map(email => (
                 <EmailItem 
@@ -213,7 +239,7 @@ function Dashboard() {
           {view === 'archived' && (
             <div className="email-section">
               <h2>Archived Emails</h2>
-              {filteredEmails.map(email => (
+              {archivedEmails.map(email => (
                 <EmailItem 
                   key={email.id} 
                   email={email} 
