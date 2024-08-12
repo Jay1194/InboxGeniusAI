@@ -76,7 +76,7 @@
   color: white;
   padding: 3px 8px;
   border-radius: 12px;
-  font-size: 0.8em;
+  font-size: 0.8rem;
 }
 
 .email-item.priority {
@@ -92,4 +92,15 @@
 
 .archive-btn:hover {
   color: var(--emerald-green);
+}
+.priority-tag {
+  display: inline-block;
+  background-color: rgb(255, 255, 255);
+  color: rgba(255, 0, 0, 0.803);
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  margin: 0;
+  border: 2px black solid;
+  font-weight: bold;
 }

@@ -64,22 +64,56 @@ function CategoryPage() {
         <section className="email-list">
           {emails.length > 0 ? (
             emails.map(email => (
-              <div key={email.id} className={`email-item ${email.isPriority ? 'priority' : ''}`}>
-                <div onClick={() => handleEmailClick(email)}>
-                  <h3>{email.summary || 'No summary available'}</h3>
-                  <span className="email-category">{email.category}</span>
-                  {email.isPriority && <span className="priority-tag">Priority</span>}
-                </div>
-                <button onClick={() => handleArchive(email.id)} className="archive-btn">
-                  <Archive size={20} />
-                </button>
-              </div>
+              <EmailItem 
+                key={email.id} 
+                email={email} 
+                onAction={handleArchive} 
+                onClick={handleEmailClick}
+                actionIcon={<Archive size={20} />}
+                actionText="Archive"
+              />
             ))
           ) : (
             <p>No emails found in this category.</p>
           )}
         </section>
       </main>
+    </div>
+  );
+}
+
+function EmailItem({ email, onAction, onClick, actionIcon, actionText }) {
+  function formatDate(internalDate) {
+    if (!internalDate) return 'Date unknown';
+    
+    const date = new Date(parseInt(internalDate, 10));
+    if (isNaN(date.getTime())) return 'Date unknown';
+  
+    const options = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true
+    };
+  
+    return date.toLocaleString('en-US', options);
+  }
+
+  return (
+    <div className={`email-item ${email.isPriority ? 'priority' : ''}`}>
+      <div onClick={() => onClick(email)}>
+        <h3>{email.summary || 'No summary available'}</h3>
+        <div className="email-details">
+          <span className="email-category">{email.category}</span>
+          <span className="email-date">{formatDate(email.receivedAt)}</span>
+          {email.isPriority && <span className="priority-tag">Priority</span>}
+        </div>
+      </div>
+      <button onClick={() => onAction(email.id)} className="archive-btn" title={actionText}>
+        {actionIcon}
+      </button>
     </div>
   );
 }

@@ -281,14 +281,11 @@ function EmailItem({ email, onAction, onClick, actionIcon, actionText }) {
   
     return date.toLocaleString('en-US', options);
   }
-  
-  
 
   return (
     <div className={`email-item ${email.isPriority ? 'priority' : ''}`}>
       <div onClick={() => onClick(email)}>
         <h3>{email.subject || 'No subject'}</h3>
-        <p>{email.summary || 'No summary available'}</p>
         <div className="email-details">
           <span className="email-category">{email.category}</span>
           <span className="email-date">{formatDate(email.receivedAt)}</span>
@@ -300,5 +297,6 @@ function EmailItem({ email, onAction, onClick, actionIcon, actionText }) {
     </div>
   );
 }
+
 
 export default Dashboard;

@@ -311,13 +311,22 @@ body {
 }
 .email-details {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 5px;
-  font-size: 0.8em;
+  margin: 2px;
+  font-size: 0.8rem;
   color: #666;
 }
 
 .email-date {
-  margin-left: 10px;
+  display: inline-block;
+  background-color: rgba(0, 0, 0, 0.564);
+  color: white;
+  padding: 5px 8px;
+  border-radius: 12px;
+  font-size: 0.6rem;
+  margin: 0 10px;
 }
+
+
+
+
