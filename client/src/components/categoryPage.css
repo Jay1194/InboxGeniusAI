@@ -82,3 +82,14 @@
   .email-item.priority {
     border-left: 4px solid var(--emerald-green);
   }
+  .archive-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+  }
+  
+  .archive-btn:hover {
+    color: var(--emerald-green);
+  }

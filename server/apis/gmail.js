@@ -43,10 +43,17 @@ router.get('/gmails', async (req, res) => {
   try {
     const gmail = getGmailService(tokens);
     const category = req.query.category;
-    const response = await gmail.users.messages.list({ userId: 'me', maxResults: 50 });
+    const archived = req.query.archived === 'true';
+
+    const query = archived ? '-in:inbox' : 'in:inbox';
+    const response = await gmail.users.messages.list({ 
+      userId: 'me', 
+      maxResults: 50,
+      q: query
+    });
 
     if (!response.data.messages || response.data.messages.length === 0) {
-      return res.status(204).send('No emails found');
+      return res.json([]);
     }
 
     const fullMessages = await Promise.all(
@@ -72,7 +79,7 @@ router.get('/gmails', async (req, res) => {
 
     let filteredMessages = fullMessages;
     if (category) {
-      filteredMessages = fullMessages.filter(message => 
+      filteredMessages = filteredMessages.filter(message => 
         message.category.toLowerCase() === category.toLowerCase()
       );
     }
@@ -81,6 +88,54 @@ router.get('/gmails', async (req, res) => {
   } catch (error) {
     console.error('Error fetching or analyzing emails:', error);
     res.status(500).send('Error processing emails: ' + error.message);
+  }
+});
+
+// Route to archive an email
+router.post('/archive/:id', async (req, res) => {
+  const tokens = req.session.tokens;
+  if (!tokens) return res.status(401).send('Unauthorized: No valid session');
+
+  try {
+    const gmail = getGmailService(tokens);
+    const messageId = req.params.id;
+
+    await gmail.users.messages.modify({
+      userId: 'me',
+      id: messageId,
+      requestBody: {
+        removeLabelIds: ['INBOX']
+      }
+    });
+
+    res.status(200).send('Email archived successfully');
+  } catch (error) {
+    console.error('Error archiving email:', error);
+    res.status(500).send('Error archiving email: ' + error.message);
+  }
+});
+
+// Route to unarchive an email
+router.post('/unarchive/:id', async (req, res) => {
+  const tokens = req.session.tokens;
+  if (!tokens) return res.status(401).send('Unauthorized: No valid session');
+
+  try {
+    const gmail = getGmailService(tokens);
+    const messageId = req.params.id;
+
+    await gmail.users.messages.modify({
+      userId: 'me',
+      id: messageId,
+      requestBody: {
+        addLabelIds: ['INBOX']
+      }
+    });
+
+    res.status(200).send('Email unarchived successfully');
+  } catch (error) {
+    console.error('Error unarchiving email:', error);
+    res.status(500).send('Error unarchiving email: ' + error.message);
   }
 });
 

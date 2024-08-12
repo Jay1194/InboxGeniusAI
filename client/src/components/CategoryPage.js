@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import { Archive } from 'lucide-react';
 import './categoryPage.css';
 
 function CategoryPage() {
@@ -10,26 +11,35 @@ function CategoryPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchEmails = async () => {
-      try {
-        const response = await axios.get(`http://localhost:4000/api/gmails?category=${category}`, {
-          withCredentials: true
-        });
-        setEmails(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error(`Error fetching ${category} emails:`, error);
-        setError(error.response?.data || error.message);
-        setLoading(false);
-      }
-    };
-
     fetchEmails();
   }, [category]);
+
+  const fetchEmails = async () => {
+    try {
+      const response = await axios.get(`http://localhost:4000/api/gmails?category=${category}`, {
+        withCredentials: true
+      });
+      setEmails(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error(`Error fetching ${category} emails:`, error);
+      setError(error.response?.data || error.message);
+      setLoading(false);
+    }
+  };
 
   const handleEmailClick = (email) => {
     const gmailUrl = `https://mail.google.com/mail/u/0/#inbox/${email.id}`;
     window.open(gmailUrl, '_blank');
+  };
+
+  const handleArchive = async (emailId) => {
+    try {
+      await axios.post(`http://localhost:4000/api/archive/${emailId}`, {}, { withCredentials: true });
+      fetchEmails(); // Refresh the email list after archiving
+    } catch (error) {
+      console.error('Error archiving email:', error);
+    }
   };
 
   if (loading) return <div className="loading">Loading...</div>;
@@ -46,10 +56,15 @@ function CategoryPage() {
         <section className="email-list">
           {emails.length > 0 ? (
             emails.map(email => (
-              <div key={email.id} className={`email-item ${email.isPriority ? 'priority' : ''}`} onClick={() => handleEmailClick(email)}>
-                <h3>{email.summary || 'No summary available'}</h3>
-                <span className="email-category">{email.category}</span>
-                {email.isPriority && <span className="priority-tag">Priority</span>}
+              <div key={email.id} className={`email-item ${email.isPriority ? 'priority' : ''}`}>
+                <div onClick={() => handleEmailClick(email)}>
+                  <h3>{email.summary || 'No summary available'}</h3>
+                  <span className="email-category">{email.category}</span>
+                  {email.isPriority && <span className="priority-tag">Priority</span>}
+                </div>
+                <button onClick={() => handleArchive(email.id)} className="archive-btn">
+                  <Archive size={20} />
+                </button>
               </div>
             ))
           ) : (

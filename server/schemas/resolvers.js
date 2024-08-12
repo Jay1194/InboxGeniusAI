@@ -1,62 +1,70 @@
-const Email = require('../models/Email');
 const User = require('../models/User');
+const Email = require('../models/Email');
 
 const resolvers = {
   Query: {
-    getEmails: async (_, __, context) => {
-      if (!context.user) throw new Error('Not authenticated');
-      return await Email.find({ user: context.user.id });
+    getEmails: async (_, { archived }, context) => {
+      if (!context.user) {
+        throw new Error('You must be logged in to view emails');
+      }
+      return Email.find({ archived: archived !== undefined ? archived : false });
     },
     getEmail: async (_, { id }, context) => {
-      if (!context.user) throw new Error('Not authenticated');
-      return await Email.findOne({ _id: id, user: context.user.id });
+      if (!context.user) {
+        throw new Error('You must be logged in to view an email');
+      }
+      return Email.findById(id);
     },
     getUser: async (_, { id }, context) => {
-      if (!context.user) throw new Error('Not authenticated');
-      return await User.findById(id);
+      if (!context.user) {
+        throw new Error('You must be logged in to view user information');
+      }
+      return User.findById(id);
     },
     me: async (_, __, context) => {
-      if (!context.user) throw new Error('Not authenticated');
+      if (!context.user) {
+        throw new Error('You must be logged in to view your information');
+      }
       return context.user;
     },
   },
   Mutation: {
     createUser: async (_, { name, email }) => {
-      const newUser = new User({ name, email });
-      await newUser.save();
-      return newUser;
+      const user = new User({ name, email });
+      await user.save();
+      return user;
     },
     createEmail: async (_, { sender, recipient, subject, body }, context) => {
-      if (!context.user) throw new Error('Not authenticated');
-      const newEmail = new Email({
-        sender,
-        recipient,
-        subject,
-        body,
-        date: new Date().toISOString(),
-        user: context.user.id
-      });
-      await newEmail.save();
-      return newEmail;
-    },
-    updateEmail: async (_, { id, category, priority, summary, sentiment }, context) => {
-      if (!context.user) throw new Error('Not authenticated');
-      const email = await Email.findOne({ _id: id, user: context.user.id });
-      if (!email) throw new Error('Email not found');
-      
-      if (category) email.category = category;
-      if (priority) email.priority = priority;
-      if (summary) email.summary = summary;
-      if (sentiment) email.sentiment = sentiment;
-      
+      if (!context.user) {
+        throw new Error('You must be logged in to create an email');
+      }
+      const email = new Email({ sender, recipient, subject, body });
       await email.save();
       return email;
     },
+    updateEmail: async (_, { id, ...updateData }, context) => {
+      if (!context.user) {
+        throw new Error('You must be logged in to update an email');
+      }
+      return Email.findByIdAndUpdate(id, updateData, { new: true });
+    },
     deleteEmail: async (_, { id }, context) => {
-      if (!context.user) throw new Error('Not authenticated');
-      const email = await Email.findOneAndDelete({ _id: id, user: context.user.id });
-      if (!email) throw new Error('Email not found');
-      return email;
+      if (!context.user) {
+        throw new Error('You must be logged in to delete an email');
+      }
+      return Email.findByIdAndDelete(id);
+    },
+    archiveEmail: async (_, { id }, context) => {
+      if (!context.user) {
+        throw new Error('You must be logged in to archive an email');
+      }
+      return Email.findByIdAndUpdate(id, { archived: true }, { new: true });
+    },
+    unarchiveEmail: async (_, { id }, context) => {
+      if (!context.user) {
+        throw new Error('You must be logged in to unarchive an email');
+      }
+      return Email.findByIdAndUpdate(id, { archived: false }, { new: true });
     },
   },
 };

@@ -10,6 +10,7 @@ const emailSchema = new mongoose.Schema({
   priority: String,
   summary: String,
   sentiment: String,
+  archived: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model('Email', emailSchema);

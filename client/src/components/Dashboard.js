@@ -1,19 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery, gql } from '@apollo/client';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Search, Mic, MicOff } from 'lucide-react';
+import { Search, Mic, MicOff, Archive, Inbox } from 'lucide-react';
 import '../dashboard.css';
-
-const GET_USER_DATA = gql`
-  query Me {
-    me {
-      id
-      name
-      email
-    }
-  }
-`;
 
 const categories = [
   'Work', 'Personal', 'Spam', 'Social', 'Promotions', 
@@ -22,36 +11,34 @@ const categories = [
 
 function Dashboard() {
   const navigate = useNavigate();
-  const { loading: userLoading, error: userError, data: userData } = useQuery(GET_USER_DATA);
   const [emails, setEmails] = useState([]);
-  const [emailsLoading, setEmailsLoading] = useState(true);
-  const [emailsError, setEmailsError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
   useEffect(() => {
-    const fetchEmails = async () => {
-      try {
-        const response = await axios.get('http://localhost:4000/api/gmails', {
-          withCredentials: true
-        });
-        setEmails(response.data);
-        setEmailsLoading(false);
-      } catch (error) {
-        console.error('Error fetching emails:', error);
-        setEmailsError(error.response?.data || error.message);
-        setEmailsLoading(false);
-      }
-    };
-
     fetchEmails();
-  }, []);
+  }, [showArchived]);
+
+  const fetchEmails = async () => {
+    try {
+      const response = await axios.get(`http://localhost:4000/api/gmails?archived=${showArchived}`, {
+        withCredentials: true
+      });
+      setEmails(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching emails:', error);
+      setError(error.response?.data || error.message);
+      setLoading(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
       await axios.post('http://localhost:4000/api/logout', {}, { withCredentials: true });
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
       navigate('/');
     } catch (error) {
       console.error('Error logging out:', error);
@@ -101,12 +88,29 @@ function Dashboard() {
     }
   };
 
-  if (userLoading || emailsLoading) return <div className="loading">Loading...</div>;
-  if (userError) return <div className="error">Error: Unable to fetch user data</div>;
-  if (emailsError) return <div className="error">Error fetching emails: {emailsError}</div>;
-  if (!userData || !userData.me) return <div className="error">No user data available</div>;
+  const handleArchive = async (emailId) => {
+    try {
+      await axios.post(`http://localhost:4000/api/archive/${emailId}`, {}, { withCredentials: true });
+      fetchEmails();
+    } catch (error) {
+      console.error('Error archiving email:', error);
+    }
+  };
+
+  const handleUnarchive = async (emailId) => {
+    try {
+      await axios.post(`http://localhost:4000/api/unarchive/${emailId}`, {}, { withCredentials: true });
+      fetchEmails();
+    } catch (error) {
+      console.error('Error unarchiving email:', error);
+    }
+  };
+
+  if (loading) return <div className="loading">Loading...</div>;
+  if (error) return <div className="error">Error: {error}</div>;
 
   const filteredEmails = emails.filter(email =>
+    email.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
     email.summary.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -120,7 +124,6 @@ function Dashboard() {
           <div className="logo"></div>
         </div>
         <div className="user-info">
-          <span>{userData.me.name}</span>
           <button onClick={handleLogout} className="logout-btn">Logout</button>
         </div>
       </header>
@@ -150,27 +153,71 @@ function Dashboard() {
             </button>
           </div>
 
-          <h2>Priority Emails<span> ⚠️ </span></h2>
-          {priorityEmails.length > 0 ? (
-            priorityEmails.slice(0, 3).map(email => (
-              <div key={email.id} className="email-item priority" onClick={() => handleEmailClick(email)}>
-                <h3>{email.summary || 'No summary available'}</h3>
-                <span className="email-category">{email.category}</span>
-              </div>
-            ))
-          ) : (
-            <p>No priority emails match your search</p>
-          )}
+          <div className="archive-toggle">
+            <button onClick={() => setShowArchived(!showArchived)}>
+              {showArchived ? <Inbox size={20} /> : <Archive size={20} />}
+              {showArchived ? 'Show Inbox' : 'Show Archived'}
+            </button>
+          </div>
 
-          <h2>Recent Emails</h2>
-          {regularEmails.slice(0, 5).map(email => (
-            <div key={email.id} className="email-item" onClick={() => handleEmailClick(email)}>
-              <h3>{email.summary || 'No summary available'}</h3>
-              <span className="email-category">{email.category}</span>
-            </div>
-          ))}
+          {showArchived ? (
+            <>
+              <h2>Archived Emails</h2>
+              {filteredEmails.map(email => (
+                <EmailItem 
+                  key={email.id} 
+                  email={email} 
+                  onAction={handleUnarchive} 
+                  onClick={handleEmailClick}
+                  actionIcon={<Inbox size={20} />}
+                  actionText="Unarchive"
+                />
+              ))}
+            </>
+          ) : (
+            <>
+              <h2>Priority Emails</h2>
+              {priorityEmails.map(email => (
+                <EmailItem 
+                  key={email.id} 
+                  email={email} 
+                  onAction={handleArchive} 
+                  onClick={handleEmailClick}
+                  actionIcon={<Archive size={20} />}
+                  actionText="Archive"
+                />
+              ))}
+
+              <h2>Recent Emails</h2>
+              {regularEmails.map(email => (
+                <EmailItem 
+                  key={email.id} 
+                  email={email} 
+                  onAction={handleArchive} 
+                  onClick={handleEmailClick}
+                  actionIcon={<Archive size={20} />}
+                  actionText="Archive"
+                />
+              ))}
+            </>
+          )}
         </section>
       </main>
+    </div>
+  );
+}
+
+function EmailItem({ email, onAction, onClick, actionIcon, actionText }) {
+  return (
+    <div className={`email-item ${email.isPriority ? 'priority' : ''}`}>
+      <div onClick={() => onClick(email)}>
+        <h3>{email.subject || 'No subject'}</h3>
+        <p>{email.summary || 'No summary available'}</p>
+        <span className="email-category">{email.category}</span>
+      </div>
+      <button onClick={() => onAction(email.id)} className="action-btn" title={actionText}>
+        {actionIcon}
+      </button>
     </div>
   );
 }

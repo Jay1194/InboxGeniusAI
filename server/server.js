@@ -23,6 +23,27 @@ db.once('open', () => {
 });
 
 async function startServer() {
+  const app = express();
+
+  app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true
+  }));
+
+  app.use(express.json());
+  app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 24 * 60 * 60 * 1000,
+    }
+  }));
+
+  app.use('/api', authRoutes);
+  app.use('/api', gmailRoutes);
+
   const server = new ApolloServer({
     typeDefs,
     resolvers,
@@ -43,28 +64,11 @@ async function startServer() {
 
   await server.start();
 
-  const app = express();
-
-  app.use(cors({
-    origin: 'http://localhost:3000',
-    credentials: true
-  }));
-
-  app.use(express.json());
-  app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 24 * 60 * 60 * 1000,
-    }
-  }));
-
-  app.use('/api', authRoutes);
-app.use('/api', gmailRoutes);
-
-  server.applyMiddleware({ app, path: '/graphql' });
+  server.applyMiddleware({ 
+    app, 
+    path: '/graphql',
+    cors: false // Disable Apollo Server's CORS as we're handling it with express cors middleware
+  });
 
   app.use((err, req, res, next) => {
     console.error('Server error:', err.stack);

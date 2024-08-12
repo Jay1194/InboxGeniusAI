@@ -12,6 +12,7 @@ const typeDefs = gql`
     priority: String
     summary: String
     sentiment: String
+    archived: Boolean
   }
 
   type User {
@@ -21,7 +22,7 @@ const typeDefs = gql`
   }
 
   type Query {
-    getEmails: [Email]
+    getEmails(archived: Boolean): [Email]
     getEmail(id: ID!): Email
     getUser(id: ID!): User
     me: User
@@ -32,6 +33,8 @@ const typeDefs = gql`
     createEmail(sender: String!, recipient: String!, subject: String!, body: String!): Email
     updateEmail(id: ID!, category: String, priority: String, summary: String, sentiment: String): Email
     deleteEmail(id: ID!): Email
+    archiveEmail(id: ID!): Email
+    unarchiveEmail(id: ID!): Email
   }
 `;
 
