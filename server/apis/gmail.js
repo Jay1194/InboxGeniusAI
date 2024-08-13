@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { google } = require('googleapis');
 const emailAnalysisModel = require('../emailAnalysis.js');
+const schedule = require('node-schedule');
 
 // Gmail API setup
 const getGmailService = (tokens) => {
@@ -43,6 +44,7 @@ router.get('/gmails', async (req, res) => {
   try {
     const gmail = getGmailService(tokens);
     const view = req.query.view || 'inbox';
+    const since = req.query.since ? new Date(parseInt(req.query.since)) : null;
 
     let query = '';
     switch (view) {
@@ -55,8 +57,15 @@ router.get('/gmails', async (req, res) => {
       case 'junk':
         query = 'in:spam';
         break;
+      case 'priority':
+        query = 'is:important in:inbox';
+        break;
       default:
         query = 'in:inbox';
+    }
+
+    if (since) {
+      query += ` after:${since.toISOString().split('T')[0]}`;
     }
 
     const response = await gmail.users.messages.list({ 
@@ -87,6 +96,7 @@ router.get('/gmails', async (req, res) => {
           subject: subject,
           archived: !fullMessage.data.labelIds.includes('INBOX'),
           isJunk: fullMessage.data.labelIds.includes('SPAM'),
+          isPriority: fullMessage.data.labelIds.includes('IMPORTANT'),
           receivedAt: fullMessage.data.internalDate,
           ...analysis
         };
@@ -196,6 +206,38 @@ router.post('/move-from-junk/:id', async (req, res) => {
   } catch (error) {
     console.error('Error moving email from junk:', error);
     res.status(500).send('Error moving email from junk: ' + error.message);
+  }
+});
+
+// Schedule job to delete junk emails older than 3 days
+schedule.scheduleJob('0 0 * * *', async function() {
+  try {
+    const tokens = req.session.tokens; // You might need to store tokens differently for this scheduled job
+    if (!tokens) {
+      console.error('No valid session for scheduled job');
+      return;
+    }
+
+    const gmail = getGmailService(tokens);
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+    const response = await gmail.users.messages.list({
+      userId: 'me',
+      q: `in:spam before:${threeDaysAgo.toISOString().split('T')[0]}`
+    });
+
+    if (response.data.messages) {
+      for (const message of response.data.messages) {
+        await gmail.users.messages.delete({
+          userId: 'me',
+          id: message.id
+        });
+      }
+      console.log(`Deleted ${response.data.messages.length} junk emails older than 3 days.`);
+    }
+  } catch (error) {
+    console.error('Error in scheduled job to delete old junk emails:', error);
   }
 });
 

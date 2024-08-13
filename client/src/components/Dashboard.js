@@ -19,12 +19,17 @@ function Dashboard() {
   const [view, setView] = useState('inbox');
   const recentEmailsRef = useRef(null);
   const [openedEmails, setOpenedEmails] = useState({});
+  const [lastCheckedTime, setLastCheckedTime] = useState(Date.now());
 
   useEffect(() => {
     fetchEmails();
-    // Load opened emails from localStorage
     const storedOpenedEmails = JSON.parse(localStorage.getItem('openedEmails') || '{}');
     setOpenedEmails(storedOpenedEmails);
+
+    // Set up interval to check for new priority emails
+    const intervalId = setInterval(checkNewPriorityEmails, 60000); // Check every minute
+
+    return () => clearInterval(intervalId); // Clean up on unmount
   }, [view]);
 
   useEffect(() => {
@@ -44,6 +49,33 @@ function Dashboard() {
       console.error('Error fetching emails:', error);
       setError(error.response?.data || error.message);
       setLoading(false);
+    }
+  };
+
+  const checkNewPriorityEmails = async () => {
+    try {
+      const response = await axios.get(`http://localhost:4000/api/gmails?view=priority&since=${lastCheckedTime}`, {
+        withCredentials: true
+      });
+      const newPriorityEmails = response.data;
+
+      if (newPriorityEmails.length > 0) {
+        showNotification(`You have ${newPriorityEmails.length} new priority email(s)!`);
+        setLastCheckedTime(Date.now());
+        fetchEmails(); // Refresh the email list
+      }
+    } catch (error) {
+      console.error('Error checking for new priority emails:', error);
+    }
+  };
+
+  const showNotification = (message) => {
+    if ('Notification' in window) {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          new Notification('New Priority Email', { body: message });
+        }
+      });
     }
   };
 
@@ -71,7 +103,37 @@ function Dashboard() {
   };
 
   const toggleVoiceSearch = () => {
-    // ... (voice search logic remains unchanged)
+    if (!isListening) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.start();
+        setIsListening(true);
+
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          setSearchTerm(transcript);
+          setIsListening(false);
+        };
+
+        recognition.onerror = (event) => {
+          console.error('Speech recognition error', event.error);
+          setIsListening(false);
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+      } else {
+        alert('Speech recognition is not supported in your browser.');
+      }
+    } else {
+      setIsListening(false);
+    }
   };
 
   const handleArchive = async (emailId) => {

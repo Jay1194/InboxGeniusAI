@@ -25,6 +25,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.5.1",
     "natural": "^7.1.0",
+    "node-schedule": "^2.1.1",
     "stopword": "^3.0.1"
   },
   "devDependencies": {
