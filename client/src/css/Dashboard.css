@@ -1,0 +1,21 @@
+.dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.dashboard-main {
+  display: flex;
+  margin-top: 20px;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.2em;
+  color: var(--text-color);
+}
+
+.error {
+  color: #ff0000;
+}

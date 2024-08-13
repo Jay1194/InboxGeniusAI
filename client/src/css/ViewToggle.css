@@ -1,0 +1,27 @@
+.view-toggles {
+    display: flex;
+    justify-content: center;
+    background-color: #f0f0f0;
+    border-radius: 20px;
+    padding: 5px;
+    margin: 0 auto;
+  }
+  
+  .view-toggles button {
+    padding: 8px 16px;
+    margin: 0 10px;
+    background-color: transparent;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .view-toggles button.active {
+    background-color: var(--emerald-green);
+    color: white;
+  }
+  
+  .view-toggles button:hover:not(.active) {
+    background-color: #e0e0e0;
+  }

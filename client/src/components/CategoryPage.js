@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Archive } from 'lucide-react';
+import { Archive, Trash2 } from 'lucide-react';
 import './categoryPage.css';
 
 function CategoryPage() {
@@ -52,6 +52,16 @@ function CategoryPage() {
     }
   };
 
+  const handleMoveToJunk = async (emailId) => {
+    try {
+      setEmails(prevEmails => prevEmails.filter(email => email.id !== emailId));
+      await axios.post(`http://localhost:4000/api/move-to-junk/${emailId}`, {}, { withCredentials: true });
+    } catch (error) {
+      console.error('Error moving email to junk:', error);
+      fetchEmails();
+    }
+  };
+
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error">Error fetching emails: {error}</div>;
 
@@ -69,10 +79,9 @@ function CategoryPage() {
               <EmailItem 
                 key={email.id}
                 email={email}
-                onAction={handleArchive}
+                onArchive={handleArchive}
+                onMoveToJunk={handleMoveToJunk}
                 onClick={handleEmailClick}
-                actionIcon={<Archive size={20} />}
-                actionText="Archive"
                 isOpened={openedEmails[email.id]}
               />
             ))
@@ -85,7 +94,7 @@ function CategoryPage() {
   );
 }
 
-function EmailItem({ email, onAction, onClick, actionIcon, actionText, isOpened }) {
+function EmailItem({ email, onArchive, onMoveToJunk, onClick, isOpened }) {
   function formatDate(internalDate) {
     if (!internalDate) return 'Date unknown';
     
@@ -114,9 +123,14 @@ function EmailItem({ email, onAction, onClick, actionIcon, actionText, isOpened 
           {email.isPriority && <span className="priority-tag">Priority</span>}
         </div>
       </div>
-      <button onClick={() => onAction(email.id)} className="archive-btn" title={actionText}>
-        {actionIcon}
-      </button>
+      <div className="email-actions">
+        <button onClick={() => onArchive(email.id)} className="action-btn" title="Archive">
+          <Archive size={20} />
+        </button>
+        <button onClick={() => onMoveToJunk(email.id)} className="action-btn" title="Move to Junk">
+          <Trash2 size={20} />
+        </button>
+      </div>
     </div>
   );
 }

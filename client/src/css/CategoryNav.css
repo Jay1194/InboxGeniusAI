@@ -1,0 +1,25 @@
+.category-nav {
+    width: 200px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .category-nav h2 {
+    color: var(--emerald-green);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+  }
+  
+  .category-link {
+    display: block;
+    color: var(--text-color);
+    text-decoration: none;
+    padding: 10px 0;
+    transition: color 0.3s ease;
+  }
+  
+  .category-link:hover {
+    color: var(--emerald-green);
+  }

@@ -42,10 +42,23 @@ router.get('/gmails', async (req, res) => {
 
   try {
     const gmail = getGmailService(tokens);
-    const category = req.query.category;
-    const archived = req.query.archived === 'true';
+    const view = req.query.view || 'inbox';
 
-    const query = archived ? '-in:inbox' : 'in:inbox';
+    let query = '';
+    switch (view) {
+      case 'inbox':
+        query = 'in:inbox';
+        break;
+      case 'archived':
+        query = '-in:inbox -in:spam';
+        break;
+      case 'junk':
+        query = 'in:spam';
+        break;
+      default:
+        query = 'in:inbox';
+    }
+
     const response = await gmail.users.messages.list({ 
       userId: 'me', 
       maxResults: 50,
@@ -73,21 +86,14 @@ router.get('/gmails', async (req, res) => {
           snippet: fullMessage.data.snippet,
           subject: subject,
           archived: !fullMessage.data.labelIds.includes('INBOX'),
-          receivedAt: fullMessage.data.internalDate, // Add this line
+          isJunk: fullMessage.data.labelIds.includes('SPAM'),
+          receivedAt: fullMessage.data.internalDate,
           ...analysis
         };
       })
     );
-    
 
-    let filteredMessages = fullMessages;
-    if (category) {
-      filteredMessages = filteredMessages.filter(message => 
-        message.category.toLowerCase() === category.toLowerCase()
-      );
-    }
-
-    res.json(filteredMessages);
+    res.json(fullMessages);
   } catch (error) {
     console.error('Error fetching or analyzing emails:', error);
     res.status(500).send('Error processing emails: ' + error.message);
@@ -131,7 +137,8 @@ router.post('/unarchive/:id', async (req, res) => {
       userId: 'me',
       id: messageId,
       requestBody: {
-        addLabelIds: ['INBOX']
+        addLabelIds: ['INBOX'],
+        removeLabelIds: ['SPAM']
       }
     });
 
@@ -139,6 +146,56 @@ router.post('/unarchive/:id', async (req, res) => {
   } catch (error) {
     console.error('Error unarchiving email:', error);
     res.status(500).send('Error unarchiving email: ' + error.message);
+  }
+});
+
+// Route to move an email to junk
+router.post('/move-to-junk/:id', async (req, res) => {
+  const tokens = req.session.tokens;
+  if (!tokens) return res.status(401).send('Unauthorized: No valid session');
+
+  try {
+    const gmail = getGmailService(tokens);
+    const messageId = req.params.id;
+
+    await gmail.users.messages.modify({
+      userId: 'me',
+      id: messageId,
+      requestBody: {
+        addLabelIds: ['SPAM'],
+        removeLabelIds: ['INBOX']
+      }
+    });
+
+    res.status(200).send('Email moved to junk successfully');
+  } catch (error) {
+    console.error('Error moving email to junk:', error);
+    res.status(500).send('Error moving email to junk: ' + error.message);
+  }
+});
+
+// Route to move an email from junk to inbox
+router.post('/move-from-junk/:id', async (req, res) => {
+  const tokens = req.session.tokens;
+  if (!tokens) return res.status(401).send('Unauthorized: No valid session');
+
+  try {
+    const gmail = getGmailService(tokens);
+    const messageId = req.params.id;
+
+    await gmail.users.messages.modify({
+      userId: 'me',
+      id: messageId,
+      requestBody: {
+        addLabelIds: ['INBOX'],
+        removeLabelIds: ['SPAM']
+      }
+    });
+
+    res.status(200).send('Email moved from junk successfully');
+  } catch (error) {
+    console.error('Error moving email from junk:', error);
+    res.status(500).send('Error moving email from junk: ' + error.message);
   }
 });
 

@@ -1,0 +1,28 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: #6D61A1;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
