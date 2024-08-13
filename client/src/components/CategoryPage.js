@@ -9,9 +9,13 @@ function CategoryPage() {
   const [emails, setEmails] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [openedEmails, setOpenedEmails] = useState({});
 
   useEffect(() => {
     fetchEmails();
+    // Load opened emails from localStorage
+    const storedOpenedEmails = JSON.parse(localStorage.getItem('openedEmails') || '{}');
+    setOpenedEmails(storedOpenedEmails);
   }, [category]);
 
   const fetchEmails = async () => {
@@ -31,21 +35,19 @@ function CategoryPage() {
   const handleEmailClick = (email) => {
     const gmailUrl = `https://mail.google.com/mail/u/0/#inbox/${email.id}`;
     window.open(gmailUrl, '_blank');
+
+    // Mark email as opened
+    const updatedOpenedEmails = { ...openedEmails, [email.id]: true };
+    setOpenedEmails(updatedOpenedEmails);
+    localStorage.setItem('openedEmails', JSON.stringify(updatedOpenedEmails));
   };
 
   const handleArchive = async (emailId) => {
     try {
-      // Optimistic update
       setEmails(prevEmails => prevEmails.filter(email => email.id !== emailId));
-      
-      // Perform the actual archive operation
       await axios.post(`http://localhost:4000/api/archive/${emailId}`, {}, { withCredentials: true });
-      
-      // If the API call is successful, we don't need to do anything else
-      // If it fails, we should revert the optimistic update (handled in the catch block)
     } catch (error) {
       console.error('Error archiving email:', error);
-      // Revert the optimistic update
       fetchEmails();
     }
   };
@@ -65,12 +67,13 @@ function CategoryPage() {
           {emails.length > 0 ? (
             emails.map(email => (
               <EmailItem 
-                key={email.id} 
-                email={email} 
-                onAction={handleArchive} 
+                key={email.id}
+                email={email}
+                onAction={handleArchive}
                 onClick={handleEmailClick}
                 actionIcon={<Archive size={20} />}
                 actionText="Archive"
+                isOpened={openedEmails[email.id]}
               />
             ))
           ) : (
@@ -82,7 +85,7 @@ function CategoryPage() {
   );
 }
 
-function EmailItem({ email, onAction, onClick, actionIcon, actionText }) {
+function EmailItem({ email, onAction, onClick, actionIcon, actionText, isOpened }) {
   function formatDate(internalDate) {
     if (!internalDate) return 'Date unknown';
     
@@ -102,7 +105,7 @@ function EmailItem({ email, onAction, onClick, actionIcon, actionText }) {
   }
 
   return (
-    <div className={`email-item ${email.isPriority ? 'priority' : ''}`}>
+    <div className={`email-item ${email.isPriority ? 'priority' : ''} ${isOpened ? 'opened' : ''}`}>
       <div onClick={() => onClick(email)}>
         <h3>{email.summary || 'No summary available'}</h3>
         <div className="email-details">

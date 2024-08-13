@@ -18,9 +18,13 @@ function Dashboard() {
   const [isListening, setIsListening] = useState(false);
   const [view, setView] = useState('inbox');
   const recentEmailsRef = useRef(null);
+  const [openedEmails, setOpenedEmails] = useState({});
 
   useEffect(() => {
     fetchEmails();
+    // Load opened emails from localStorage
+    const storedOpenedEmails = JSON.parse(localStorage.getItem('openedEmails') || '{}');
+    setOpenedEmails(storedOpenedEmails);
   }, [view]);
 
   useEffect(() => {
@@ -55,6 +59,11 @@ function Dashboard() {
   const handleEmailClick = (email) => {
     const gmailUrl = `https://mail.google.com/mail/u/0/#inbox/${email.id}`;
     window.open(gmailUrl, '_blank');
+
+    // Mark email as opened
+    const updatedOpenedEmails = { ...openedEmails, [email.id]: true };
+    setOpenedEmails(updatedOpenedEmails);
+    localStorage.setItem('openedEmails', JSON.stringify(updatedOpenedEmails));
   };
 
   const handleSearchChange = (event) => {
@@ -206,6 +215,7 @@ function Dashboard() {
                     onClick={handleEmailClick}
                     actionIcon={<Archive size={20} />}
                     actionText="Archive"
+                    isOpened={openedEmails[email.id]}
                   />
                 ))
               )}
@@ -225,6 +235,7 @@ function Dashboard() {
                       onClick={handleEmailClick}
                       actionIcon={<Archive size={20} />}
                       actionText="Archive"
+                      isOpened={openedEmails[email.id]}
                     />
                   ))}
                   {view === 'inbox' && priorityEmails.length > 3 && (
@@ -246,6 +257,7 @@ function Dashboard() {
                       onClick={handleEmailClick}
                       actionIcon={<Archive size={20} />}
                       actionText="Archive"
+                      isOpened={openedEmails[email.id]}
                     />
                   ))}
                   {view === 'inbox' && regularEmails.length > 5 && (
@@ -267,6 +279,7 @@ function Dashboard() {
                       onClick={handleEmailClick}
                       actionIcon={<Inbox size={20} />}
                       actionText="Unarchive"
+                      isOpened={openedEmails[email.id]}
                     />
                   ))}
                 </div>
@@ -285,7 +298,7 @@ function Dashboard() {
   );
 }
 
-function EmailItem({ email, onAction, onClick, actionIcon, actionText }) {
+function EmailItem({ email, onAction, onClick, actionIcon, actionText, isOpened }) {
   function formatDate(internalDate) {
     if (!internalDate) return 'Date unknown';
     
@@ -305,7 +318,7 @@ function EmailItem({ email, onAction, onClick, actionIcon, actionText }) {
   }
 
   return (
-    <div className={`email-item ${email.isPriority ? 'priority' : ''}`}>
+    <div className={`email-item ${email.isPriority ? 'priority' : ''} ${isOpened ? 'opened' : ''}`}>
       <div onClick={() => onClick(email)}>
         <h3>{email.subject || 'No subject'}</h3>
         <div className="email-details">

@@ -81,6 +81,10 @@ body {
 
 .category-nav h2 {
   color: var(--emerald-green);
+  border-bottom: 1
+}
+.category-nav h2 {
+  color: var(--emerald-green);
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 10px;
 }
@@ -141,7 +145,7 @@ body {
   color: white;
 }
 
-.email-item.archived,
+.email-item.opened,
 .email-item:active,
 .email-item.clicked {
   background-color: var(--clicked-grey);
