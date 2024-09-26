@@ -78,10 +78,22 @@ async function startServer() {
     });
   });
 
-  const PORT = process.env.PORT || 4000;
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}${server.graphqlPath}`);
+  const path = require('path');
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../client/build')));
+
+// Serve the React app for any non-API routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+});
+
+
+  const port = process.env.PORT || 4000;
+  app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
   });
+  
 }
 
 startServer();
